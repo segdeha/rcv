@@ -31,6 +31,7 @@ class App {
 
   isDupe(item) {
     let isDupe = false;
+    let isSimilar = false;
     item = item.toLowerCase();
     const candidates = this.vm.list().map(candidate => candidate.toLowerCase());
     for (let i = 0; i < candidates.length; i += 1) {
@@ -39,10 +40,10 @@ class App {
         isDupe = true;
       }
       else if (this.lvn.calc(item, candidates[i]) < this.THRSHLD) {
-        isDupe = true;
+        isSimilar = true;
       }
     }
-    return isDupe;
+    return { isDupe, isSimilar };
   }
 
   handleAddInputFocus(evt) {
@@ -55,10 +56,14 @@ class App {
     const { itemInput } = this.dom;
     const item = itemInput.value.trim();
     // check that the item is not a duplicate of existing items
-    if (this.isDupe(item)) {
+    const { isDupe, isSimilar } = this.isDupe(item);
+    if (isSimilar) {
       if (confirm(`${item} appears to be a duplicate of an existing item in the list. Add it anyway?`)) {
         this.addItem(item);
       }
+    }
+    else if (isDupe) {
+      alert(`${item} is an exact duplicate of an existing item in the list. Change it and try again.`);
     }
     else {
       this.addItem(item);

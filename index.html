@@ -106,21 +106,21 @@
       <li>This process repeats until a candidate exceeds 50% of 1st place votes.</li>
     </ol>
     <hr>
-    <h2>Add to the ballot 📝</h2>
-    <form id="add">
-      <label>
-        Item to add to ballot<br>
-        <input type="text" name="item">
-        <span aria-hidden id="add-confirmation">Item added ✅</span>
-      </label>
-      <p>
-        <button>Add item to ballot</button>
-      </p>
-    </form>
-    <hr>
     <section class="votes">
       <section class="ballot">
-        <h2>Vote here! 🗳️</h2>
+        <h2>1. Add to the ballot 📝</h2>
+        <form id="add">
+          <label>
+            Item to add to ballot<br>
+            <input type="text" name="item">
+            <span aria-hidden id="add-confirmation">Item added ✅</span>
+          </label>
+          <p>
+            <button>Add item to ballot</button>
+          </p>
+        </form>
+        <hr>
+        <h2>2. Vote here! 🗳️</h2>
         <p>Vote by first assigning a rank to each of the items for which you want to vote. Select “Do not rank” for the items for which you do not want to vote.</p>
         <p>When you’re happy with your ballot, select “Cast ballot”. You can vote as many times as you want to simulate multiple people voting.
         <form id="ballot">
@@ -133,7 +133,7 @@
         </form>
       </section>
       <section class="tally">
-        <h2>Results here! 🏆</h2>
+        <h2>3. Results here! 🏆</h2>
         <div id="results">
             <p><em>No results just yet. Cast your ballot to see the tally.</em></p>
         </div>

@@ -46,6 +46,22 @@ class App {
     return { isDupe, isSimilar };
   }
 
+  // takes an array of objects where one of the properties is named `value`
+  hasDupes(array) {
+    const seen = new Set();
+    for (let i = 0; i < array.length; i += 1) {
+      const { value } = array[i];
+      if (seen.has(value)) {
+        return true;
+      }
+      // exclude "Do Not Rank"
+      else if (value > 0) {
+        seen.add(value);
+      }
+    }
+    return false;
+  }
+
   handleInputFocus(evt) {
     evt.target.classList.remove('show');
   }
@@ -78,13 +94,30 @@ class App {
   handleVote(evt) {
     evt.preventDefault(); // don't submit the form
     const { resultsList } = this.dom;
-    // submit ballot
-    this.vm.vote();
-    // TODO
-    // tally votes
-    const tally = [];
-    const html = this.buildResults(tally);
-    this.render(html, resultsList);
+    // gather rankings for all of the candidates
+    const votes = this.gatherBallot();
+
+console.table(votes);
+
+    // if there are no items, alert the user
+    if (0 === votes.length) {
+      alert('Add at least one item to the ballot before casting your vote.');
+    }
+    else {
+      // if there are items with identical ranks, alert the user
+      if (this.hasDupes(votes)) {
+        alert('All items must have a unique rank.');
+      }
+      else {
+        // submit ballot
+        this.vm.vote();
+        // TODO
+        // tally votes
+        const tally = [];
+        const html = this.buildResults(tally);
+        this.render(html, resultsList);
+      }
+    }
   }
 
   addEventListeners() {
@@ -108,9 +141,14 @@ class App {
 
   // read vote values for each candidate from the DOM
   gatherBallot() {
-    // do this at click-time because it will have changed
+    // grab elements on-click because they may’ve changed since the last click
     const selects = document.querySelectorAll('#ballot select');
-    // TODO
+    const votes = [];
+    selects.forEach(select => {
+      const { name, value } = select;
+      votes.push({ name, value: +value }); // cast value as a number
+    });
+    return votes;
   }
 
   // build some HTML based on an array of strings
@@ -136,7 +174,7 @@ class App {
     // randomize the order to avoid bias
     const shuffledItems = [...items].sort(() => Math.random() - 0.5);
 
-    let options = '<option>Do Not Rank</option>';
+    let options = '<option value="0">Do Not Rank</option>';
     for (let i = 0; i < shuffledItems.length; i += 1) {
       options += `<option>${i + 1}</option>`;
     }
@@ -167,6 +205,7 @@ class App {
     //     <td>83</td>
     //   </tr>
     // <table>
+
     const ths = '';
     const rows = '';
     return `

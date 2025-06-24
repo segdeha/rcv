@@ -1,0 +1,147 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Ranked Choice Voting</title>
+    <style>
+      /* element styles */
+      body {
+        font: 16px/1.33 sans-serif;
+        margin: 0 auto;
+        max-width: 1024px;
+      }
+      input[type=text] {
+        background: #eee;
+        border: none;
+        border-bottom: solid 2px #666;
+        color: inherit;
+        font-family: inherit;
+        font-size: 0.85rem;
+        line-height: inherit;
+        margin: 0;
+        outline: none;
+        padding: 0.5rem;
+      }
+        input[type=text]:focus {
+          background: #e7e7ff;
+          border-color: #66f;
+        }
+      button {
+        appearance: none;
+        background: none;
+        border: none;
+        cursor: pointer;
+        margin: 0;
+        padding: 0;
+
+        font-family: inherit;
+        font-size: inherit;
+        line-height: inherit;
+        color: inherit;
+        text-align: center;
+        text-decoration: none;
+
+        outline: none;
+
+        vertical-align: middle;
+        white-space: nowrap;
+
+        background-color: #007bff;
+        color: white;
+        padding: 10px 20px;
+        border-radius: 5px;
+      }
+      label {
+        display: block;
+        margin: 1rem 0;
+      }
+      hr {
+        background: #999;
+        border: none;
+        height: 1px;
+        margin: 2rem 0;
+      }
+      footer {
+        margin: 2rem 0;
+      }
+
+      /* named styles */
+      #add-confirmation {
+        display: none;
+        font-style: italic;
+      }
+        #add-confirmation.show {
+          display: inline;
+        }
+      .votes {
+        align-items: flex-start;
+        display: flex;
+        gap: 2rem;
+        justify-content: space-around;
+      }
+        .votes section {
+          flex: 1;
+        }
+      #ballot, #results {
+        border: solid 1rem #ccc;
+        padding: 0 1rem;
+      }
+
+      /* media queries */
+      @media (max-width: 768px) {
+        .votes {
+          flex-direction: column;
+        }
+      }
+    </style>
+    <script defer type="module" src="./assets/behaviors.js"></script>
+  </head>
+  <body>
+    <h1>Ranked Choice Voting</h1>
+    <p>A simple tool to experiment with <a href="https://en.wikipedia.org/wiki/Ranked_voting">ranked choice voting</a>, and more specifically <a href="https://en.wikipedia.org/wiki/Instant-runoff_voting">instant-runoff voting</a>.</p>
+    <p>The winner is determined as follows:</p>
+    <ol>
+      <li>Votes are tallied. If a candidate exceeds 50% of all 1st place votes, they win.</li>
+      <li>If no candidate exceeds 50% of all 1st place votes, the candidate with the fewest 1st place votes is eliminated and their votes reallocated as 1st place votes to the candidates ranked second on those ballots.</li>
+      <li>This process repeats until a candidate exceeds 50% of 1st place votes.</li>
+    </ol>
+    <hr>
+    <h2>Add to the ballot 📝</h2>
+    <form id="add">
+      <label>
+        Item to add to ballot<br>
+        <input type="text" name="item">
+        <span aria-hidden id="add-confirmation">Item added ✅</span>
+      </label>
+      <p>
+        <button>Add item to ballot</button>
+      </p>
+    </form>
+    <hr>
+    <section class="votes">
+      <section class="ballot">
+        <h2>Vote here! 🗳️</h2>
+        <p>Vote by first assigning a rank to each of the items for which you want to vote. Select “Do not rank” for the items for which you do not want to vote.</p>
+        <p>When you’re happy with your ballot, select “Cast ballot”. You can vote as many times as you want to simulate multiple people voting.
+        <form id="ballot">
+          <div id="items">
+            <p><em>No items on which to vote just yet. Add an item to the ballot above.</em></p>
+          </div>
+          <p>
+            <button>Cast ballot</button>
+          </p>
+        </form>
+      </section>
+      <section class="tally">
+        <h2>Results here! 🏆</h2>
+        <div id="results">
+            <p><em>No results just yet. Cast your ballot to see the tally.</em></p>
+        </div>
+      </section>
+    </section>
+    <footer>
+      <hr>
+      <p>Copyright &copy; 2025 Andrew Hedges. All Rights Reserved.</p>
+    </footer>
+  </body>
+</html>

@@ -10,10 +10,14 @@
         margin: 0 auto;
         max-width: 1024px;
       }
+      input, button {
+        transition: all 0.2s;
+      }
       input[type=text] {
-        background: #eee;
+        background: rgba(0, 0, 0, 0.067);
+        background: linear-gradient(0deg, rgba(0, 0, 0, 0.067) 0%, rgba(0, 0, 0, 0) 100%);
         border: none;
-        border-bottom: solid 2px #666;
+        border-bottom: solid 2px rgba(0, 0, 0, 0.67);
         color: inherit;
         font-family: inherit;
         font-size: 0.85rem;
@@ -24,33 +28,36 @@
       }
         input[type=text]:focus {
           background: rgba(0, 0, 255, 0.067);
+          background: linear-gradient(0deg, rgba(0, 0, 255, 0.067) 0%, rgba(0, 0, 0, 0) 100%);
           border-color: rgba(0, 0, 255, 0.67);
         }
       button {
+        /* reset */
         appearance: none;
         background: none;
         border: none;
+        color: inherit;
         cursor: pointer;
-        margin: 0;
-        padding: 0;
-
         font-family: inherit;
         font-size: inherit;
         line-height: inherit;
-        color: inherit;
+        margin: 0;
+        outline: none;
+        padding: 0;
         text-align: center;
         text-decoration: none;
-
-        outline: none;
-
         vertical-align: middle;
         white-space: nowrap;
-
-        background-color: #007bff;
+        /* bespoke styles */
+        background-color: rgb(0, 115, 230);
         color: white;
-        padding: 10px 20px;
-        border-radius: 5px;
+        padding: 0.75rem 1.25rem;
+        border-radius: 0.33rem;
       }
+        button:hover {
+          background-color: rgb(25, 140, 255);
+          box-shadow: rgba(0, 0, 0, 0.2) 0 0.2rem 0.2rem;
+        }
       label {
         display: block;
         margin: 1rem 0;

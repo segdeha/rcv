@@ -54,18 +54,24 @@ class App {
     evt.preventDefault(); // don't submit the form
     const { itemInput } = this.dom;
     const item = itemInput.value.trim();
-    // check that the item is not a duplicate of existing items
-    const { isDupe, isSimilar } = this.isDupe(item);
-    if (isSimilar) {
-      if (confirm(`${item} is similar to an existing item in the list. Add it anyway?`)) {
-        this.addItem(item);
-      }
-    }
-    else if (isDupe) {
-      alert(`${item} is an exact duplicate of an existing item in the list. Change it and try again.`);
+    // check that the item is not empty
+    if ('' === item) {
+      alert('The item name cannot be blank.');
     }
     else {
-      this.addItem(item);
+      // check that the item is not a duplicate of existing items
+      const { isDupe, isSimilar } = this.isDupe(item);
+      if (isSimilar) {
+        if (confirm(`${item} is similar to an existing item in the list. Add it anyway?`)) {
+          this.addItem(item);
+        }
+      }
+      else if (isDupe) {
+        alert(`${item} is an exact duplicate of an existing item in the list. Change it and try again.`);
+      }
+      else {
+        this.addItem(item);
+      }
     }
   }
 

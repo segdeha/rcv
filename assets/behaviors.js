@@ -58,7 +58,7 @@ class App {
     // check that the item is not a duplicate of existing items
     const { isDupe, isSimilar } = this.isDupe(item);
     if (isSimilar) {
-      if (confirm(`${item} appears to be a duplicate of an existing item in the list. Add it anyway?`)) {
+      if (confirm(`${item} is similar to an existing item in the list. Add it anyway?`)) {
         this.addItem(item);
       }
     }

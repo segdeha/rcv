@@ -7,7 +7,7 @@ import { VotingMachine } from './voting-machine.js'
 class App {
   constructor() {
     // Levenshtein threshold under which 2 strings are considered duplicates
-    this.THRSHLD = 0.2;
+    this.THRSHLD = 0.25;
 
     // instantiate our tools
     this.lvn = new Levenshtein();
@@ -72,12 +72,14 @@ class App {
 
   handleVote(evt) {
     evt.preventDefault(); // don't submit the form
+    const { resultsList } = this.dom;
     // submit ballot
     this.vm.vote();
+    // TODO
     // tally votes
     const tally = [];
     const html = this.buildResults(tally);
-    this.render(html, this.dom.resultsList);
+    this.render(html, resultsList);
   }
 
   addEventListeners() {
@@ -89,20 +91,21 @@ class App {
   }
 
   addItem(item) {
-    const {itemInput, addConfirm } = this.dom;
+    const { addConfirm, itemInput, itemsList } = this.dom;
     this.vm.add(item);
     itemInput.value = '';
     itemInput.blur();
     addConfirm.classList.add('show');
     const items = this.vm.list();
     const html = this.buildBallot(items);
-    this.render(html, this.dom.itemsList);
+    this.render(html, itemsList);
   }
 
   // read vote values for each candidate from the DOM
   gatherBallot() {
+    // do this at click-time because it will have changed
     const selects = document.querySelectorAll('#ballot select');
-
+    // TODO
   }
 
   // build some HTML based on an array of strings

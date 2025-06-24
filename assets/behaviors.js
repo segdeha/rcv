@@ -46,9 +46,8 @@ class App {
     return { isDupe, isSimilar };
   }
 
-  handleAddInputFocus(evt) {
-    const { addConfirm } = this.dom;
-    addConfirm.classList.remove('show');
+  handleInputFocus(evt) {
+    evt.target.classList.remove('show');
   }
 
   handleAdd(evt) {
@@ -87,7 +86,7 @@ class App {
     addButton.addEventListener('click', this.handleAdd.bind(this));
     addForm.addEventListener('submit', this.handleAdd.bind(this));
     ballotButton.addEventListener('click', this.handleVote.bind(this));
-    itemInput.addEventListener('focus', this.handleAddInputFocus.bind(this));
+    itemInput.addEventListener('focus', this.handleInputFocus.bind(this));
   }
 
   addItem(item) {

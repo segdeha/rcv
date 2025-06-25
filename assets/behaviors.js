@@ -1,7 +1,6 @@
 /* UI behaviors */
 
 import { Levenshtein } from './levenshtein.js'
-import { RCV } from './rcv.js'
 import { VotingMachine } from './voting-machine.js'
 import { RandomNames } from './random-names.js'
 
@@ -12,7 +11,6 @@ class App {
 
     // instantiate our tools
     this.lvn = new Levenshtein();
-    this.rcv = new RCV();
     this.vm  = new VotingMachine();
     this.rnd = new RandomNames();
 
@@ -114,14 +112,7 @@ class App {
         const name = this.rnd.getName();
         this.vm.vote(name, votes);
         // tally votes
-        // TODO have this come from VotingMachine, votes array should be ordered by 1st place votes
-        const tally = {
-          voters: ['Kaiya Lynch', 'Jasper Kelly', 'Cecilia Cox', 'Marcel Adams', 'Skylar Ellis', 'Julian Edwards', 'Isaac Ellis', 'Violet Lynch'],
-          votes: [{
-            name: 'Yellow Bird',
-            votes: [3, 2, 1, 1, 1],
-          }],
-        };
+        const tally = this.vm.tally();
         const html = this.buildResults(tally);
         this.render(html, resultsList);
       }

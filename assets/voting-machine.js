@@ -1,65 +1,74 @@
 /* Voting Machine */
 
+import { RCV } from './rcv.js'
+
 // responsibilities:
 // - keep a list of candidates
-// - record votes associated with voters
+// - record votes (ranks for each candidate) associated with voters
+// - tally the votes based on the algo of choice (RCV)
 
 class VotingMachine {
   constructor() {
-    this.items = [
+    // algorithm used to tally votes
+    this.algo = new RCV();
+
+    // simple array of strings
+    this.candidates = [];
+
+    // a vote is an object with a voter and an array of ranks
+    this.votes = [
       /*
-      {
-        name: 'Yellow Bird',
-        votes: [3, 2, 1], // 3 1sts, 2 2nds, 1 3rd
-      }
+        {
+          voter: 'Sally Ride',
+          ranks: [
+            {
+              candidate: 'Chipotle Cholula',
+              rank: 1,
+            },
+            {
+              candidate: 'Tabasco',
+              rank: 3,
+            },
+            {
+              candidate: 'Yellow Bird',
+              rank: 2,
+            },
+          ],
+        }
       */
     ];
-    this.votes = {
-      /*
-      'Jerry Tanaka': {
-        'Yellow Bird': 1, // ranked 1st
-        'Tabasco': 3, // ranked 3rd
-        'Chipotle Cholula': 2, // ranked 2nd
-      },
-      */
-    };
   }
 
   // add a new item to be voted on
   // item should be a string that can be used as the items name
   // the votes array will start empty
-  add(item) {
-    this.items.push({
-      name: item,
-      votes: [],
-    })
-
-console.table(this.items)
-
+  add(candidate) {
+    this.candidates.push(candidate);
   }
 
-  // return a simple array of strings of the candidate items
+  // return a simple array of strings of the candidates
   list() {
-    return this.items.map(item => item.name);
+    return this.candidates;
   }
 
   // record a vote (array of rankings of items associated with a name)
-  vote(name, votes) {}
+  vote(voter, ranks) {
+    // TODO make sure the voter is unique
+    // TODO if the voter exists, replace their vote
+    this.votes.push({
+      voter,
+      ranks,
+    });
+  }
 
   // return an array of the names of the voters
   voters() {
-    return Object.keys(this.votes);
+    return this.votes.map(vote => vote.voter);
   }
-
-  // return an array of items and the votes cast for them
-  votes() {}
 
   // tally the votes
   tally() {
-    const result = {
-      voters: this.voters(),
-      votes: [],
-    };
+    return this.algo.tally(this.votes);
   }
 }
 

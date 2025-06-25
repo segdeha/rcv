@@ -3,6 +3,7 @@
 import { Levenshtein } from './levenshtein.js'
 import { RCV } from './rcv.js'
 import { VotingMachine } from './voting-machine.js'
+import { RandomNames } from './random-names.js'
 
 class App {
   constructor() {
@@ -13,11 +14,12 @@ class App {
     this.lvn = new Levenshtein();
     this.rcv = new RCV();
     this.vm  = new VotingMachine();
+    this.rnd = new RandomNames();
 
     // stash some DOM elements
     this.dom = {
       addButton:    document.querySelector('#add button'),
-      addConfirm:   document.getElementById('add-confirmation'),
+      addConfirm:   document.querySelector('#add-confirmation'),
       addForm:      document.querySelector('#add'),
       ballotButton: document.querySelector('#ballot button'),
       itemInput:    document.querySelector('input[name=item]'),
@@ -63,7 +65,7 @@ class App {
   }
 
   handleInputFocus(evt) {
-    evt.target.classList.remove('show');
+    this.dom.addConfirm.classList.remove('show');
   }
 
   handleAdd(evt) {
@@ -96,9 +98,6 @@ class App {
     const { resultsList } = this.dom;
     // gather rankings for all of the candidates
     const votes = this.gatherBallot();
-
-console.table(votes);
-
     // if there are no items, alert the user
     if (0 === votes.length) {
       alert('Add at least one item to the ballot before casting your vote.');
@@ -110,10 +109,19 @@ console.table(votes);
       }
       else {
         // submit ballot
-        this.vm.vote();
-        // TODO
+        // votes are associated with a name
+        // submitting votes for an existing name overwrites their previous vote
+        const name = this.rnd.getName();
+        this.vm.vote(name, votes);
         // tally votes
-        const tally = [];
+        // TODO have this come from VotingMachine, votes array should be ordered by 1st place votes
+        const tally = {
+          voters: ['Kaiya Lynch', 'Jasper Kelly', 'Cecilia Cox', 'Marcel Adams', 'Skylar Ellis', 'Julian Edwards', 'Isaac Ellis', 'Violet Lynch'],
+          votes: [{
+            name: 'Yellow Bird',
+            votes: [3, 2, 1, 1, 1],
+          }],
+        };
         const html = this.buildResults(tally);
         this.render(html, resultsList);
       }
@@ -121,7 +129,7 @@ console.table(votes);
   }
 
   addEventListeners() {
-    const { addButton, addForm, ballotButton, itemInput } = this.dom;
+    const { addButton, addConfirm, addForm, ballotButton, itemInput } = this.dom;
     addButton.addEventListener('click', this.handleAdd.bind(this));
     addForm.addEventListener('submit', this.handleAdd.bind(this));
     ballotButton.addEventListener('click', this.handleVote.bind(this));
@@ -152,25 +160,24 @@ console.table(votes);
   }
 
   // build some HTML based on an array of strings
+  // the html result from this function should be of the following form:
+  // <label>
+  //   My Item 1
+  //   <select name="My Item 1">
+  //     <option>Do Not Rank</option>
+  //     <option>1</option>
+  //     <option>2</option>
+  //   <select>
+  // </label>
+  // <label>
+  //   My Item 2
+  //   <select name="My Item 2">
+  //     <option>Do Not Rank</option>
+  //     <option>1</option>
+  //     <option>2</option>
+  //   <select>
+  // </label>
   buildBallot(items) {
-    // the html result from this function should be of the following form:
-    // <label>
-    //   My Item 1
-    //   <select name="My Item 1">
-    //     <option>Do Not Rank</option>
-    //     <option>1</option>
-    //     <option>2</option>
-    //   <select>
-    // </label>
-    // <label>
-    //   My Item 2
-    //   <select name="My Item 2">
-    //     <option>Do Not Rank</option>
-    //     <option>1</option>
-    //     <option>2</option>
-    //   <select>
-    // </label>
-
     // randomize the order to avoid bias
     const shuffledItems = [...items].sort(() => Math.random() - 0.5);
 
@@ -189,25 +196,37 @@ console.table(votes);
   // - table: Candidate, %, 1sts, 2nds, 3rds, ...
   // - in order of 1st place votes, descending order
   // - item name, percentage of 1st place votes, number of 1st place votes, etc.
+  //
+  // the html result from this function should be of the following form:
+  // <table>
+  //   <tr>
+  //     <th>Candidate</th>
+  //     <th>%</th>
+  //     <th>1sts</th>
+  //     <th>2nds</th>
+  //   </tr>
+  //   <tr>
+  //     <td>Chipotle Cholula</td>
+  //     <td>43%</td>
+  //     <td>71</td>
+  //     <td>83</td>
+  //   </tr>
+  // <table>
   buildResults(tally) {
-    // the html result from this function should be of the following form:
-    // <table>
-    //   <tr>
-    //     <th>Candidate</th>
-    //     <th>%</th>
-    //     <th>1sts</th>
-    //     <th>2nds</th>
-    //   </tr>
-    //   <tr>
-    //     <td>Chipotle Cholula</td>
-    //     <td>43%</td>
-    //     <td>71</td>
-    //     <td>83</td>
-    //   </tr>
-    // <table>
-
-    const ths = '';
-    const rows = '';
+    const ordinals = ['1st', '2nd', '3rd'];
+    let ths = '';
+    let rows = '';
+    // build column headers
+    for (let i = 0; i < tally.voters.length; i += 1) {
+      if ('undefined' !== typeof ordinals[i]) {
+        ths += `<th>${ordinals[i]}</th>`;
+      }
+      else {
+        ths += `<th>${ i + 1 }th</th>`;
+      }
+    }
+    // build rows
+    for (let i = 0; i < tally.length; i += 1) {}
     return `
       <table>
         <tr>

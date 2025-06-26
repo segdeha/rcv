@@ -68,7 +68,11 @@ class VotingMachine {
 
   // tally the votes
   tally() {
-    return this.algo.tally(this.votes);
+    const result = this.algo.tally(this.votes);
+    return {
+      voters: this.voters(),
+      result,
+    };
   }
 }
 

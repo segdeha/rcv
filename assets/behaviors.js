@@ -46,24 +46,37 @@ class App {
     return { isDupe, isSimilar };
   }
 
-  // takes an array of objects where one of the properties is named `value`
+  // takes an array of any values
   hasDupes(array) {
-    const seen = new Set();
-    for (let i = 0; i < array.length; i += 1) {
-      const { value } = array[i];
-      if (seen.has(value)) {
-        return true;
-      }
-      // exclude "Do Not Rank"
-      else if (value > 0) {
-        seen.add(value);
+    const uniques = new Set(array);
+    return array.length !== uniques.size;
+  }
+
+  // takes an array of numbers, sorts them, eliminates dupes, then tests
+  // whether the remaining numbers are sequential, starting at 0
+  areSequential(array) {
+    const uniques = new Set(array);
+    const values = Array.from(uniques);
+    values.sort((a, b) => {
+      return a > b ? 1 : a < b ? -1 : 0;
+    });
+    // make sure there’s a 0 at the front of the array
+    if (0 !== values[0]) {
+      values.unshift(0);
+    }
+    let areSequential = true;
+    for (let i = 0; i < values.length; i += 1) {
+      if (i !== values[i]) {
+        areSequential = false;
+        break;
       }
     }
-    return false;
+    return areSequential;
   }
 
   handleInputFocus(evt) {
-    this.dom.addConfirm.classList.remove('show');
+    const { addConfirm } = this.dom;
+    addConfirm.classList.remove('show');
   }
 
   handleAdd(evt) {
@@ -77,13 +90,13 @@ class App {
     else {
       // check that the item is not a duplicate of existing items
       const { isDupe, isSimilar } = this.isDupe(item);
-      if (isSimilar) {
+      if (isDupe) {
+        alert(`${item} is an exact duplicate of an existing item in the list. Change it and try again.`);
+      }
+      else if (isSimilar) {
         if (confirm(`${item} is similar to an existing item in the list. Add it anyway?`)) {
           this.addItem(item);
         }
-      }
-      else if (isDupe) {
-        alert(`${item} is an exact duplicate of an existing item in the list. Change it and try again.`);
       }
       else {
         this.addItem(item);
@@ -96,21 +109,27 @@ class App {
     const { resultsList } = this.dom;
     // gather rankings for all of the candidates
     const votes = this.gatherBallot();
+    // gather simple array of ranks for validation purposes
+    const ranks = votes.map(vote => vote.rank);
     // if there are no items, alert the user
     if (0 === votes.length) {
       alert('Add at least one item to the ballot before casting your vote.');
     }
     else {
       // if there are items with identical ranks, alert the user
-      if (this.hasDupes(votes)) {
+      if (this.hasDupes(ranks)) {
         alert('All items must have a unique rank.');
+      }
+      // if any ranks are not sequential, alert the user
+      else if (!this.areSequential(ranks)) {
+        alert('All ranks must be sequential, starting with 1.');
       }
       else {
         // submit ballot
         // votes are associated with a name
         // submitting votes for an existing name overwrites their previous vote
-        const name = this.rnd.getName();
-        this.vm.vote(name, votes);
+        const voter = this.rnd.getName();
+        this.vm.vote(voter, votes);
         // tally votes
         const tally = this.vm.tally();
         const html = this.buildResults(tally);
@@ -145,7 +164,7 @@ class App {
     const votes = [];
     selects.forEach(select => {
       const { name, value } = select;
-      votes.push({ name, value: +value }); // cast value as a number
+      votes.push({ candidate: name, rank: +value }); // cast value as a number
     });
     return votes;
   }
@@ -227,6 +246,7 @@ class App {
         </tr>
         ${rows}
       </table>
+      <p><strong>Voters:</strong> ${tally.voters.join(', ')}</p>
     `
   }
 

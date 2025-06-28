@@ -1,18 +1,14 @@
 /* UI behaviors */
 
-import { Levenshtein } from './levenshtein.js'
-import { VotingMachine } from './voting-machine.js'
-import { RandomNames } from './random-names.js'
+import { DragAndDrop } from './drag-and-drop.js';
+import { Levenshtein } from './levenshtein.js';
+import { VotingMachine } from './voting-machine.js';
+import { RandomNames } from './random-names.js';
 
 class App {
   constructor() {
     // Levenshtein threshold under which 2 strings are considered duplicates
     this.THRSHLD = 0.25;
-
-    // instantiate our tools
-    this.lvn = new Levenshtein();
-    this.vm  = new VotingMachine();
-    this.rnd = new RandomNames();
 
     // stash some DOM elements
     this.dom = {
@@ -21,9 +17,15 @@ class App {
       addForm:      document.querySelector('#add'),
       ballotButton: document.querySelector('#ballot button'),
       itemInput:    document.querySelector('input[name=item]'),
-      itemsList:    document.querySelector('#items'),
+      itemsList:    document.querySelector('#unranked'),
       resultsList:  document.querySelector('#results'),
     };
+
+    // instantiate our tools
+    this.dnd = new DragAndDrop('ranked', 'unranked');
+    this.lvn = new Levenshtein();
+    this.vm  = new VotingMachine();
+    this.rnd = new RandomNames();
 
     // connect it all up
     this.addEventListeners();
@@ -171,34 +173,22 @@ class App {
 
   // build some HTML based on an array of strings
   // the html result from this function should be of the following form:
-  // <label>
-  //   My Item 1
-  //   <select name="My Item 1">
-  //     <option>Do Not Rank</option>
-  //     <option>1</option>
-  //     <option>2</option>
-  //   <select>
-  // </label>
-  // <label>
-  //   My Item 2
-  //   <select name="My Item 2">
-  //     <option>Do Not Rank</option>
-  //     <option>1</option>
-  //     <option>2</option>
-  //   <select>
-  // </label>
+  // <li class="list-item" draggable data-item-id="sub_001">
+  //   Item A
+  //   <input type="hidden" class="item-position" value="0">
+  //   <span>Pos: 0</span>
+  // </li>
   buildBallot(items) {
     // randomize the order to avoid bias
     const shuffledItems = [...items].sort(() => Math.random() - 0.5);
 
-    let options = '<option value="0">Do Not Rank</option>';
-    for (let i = 0; i < shuffledItems.length; i += 1) {
-      options += `<option>${i + 1}</option>`;
-    }
     let html = '';
-    for (let i = 0; i < shuffledItems.length; i += 1) {
-      html += `<label>${shuffledItems[i]} <select name="${shuffledItems[i]}">${options}</select></label>`;
-    }
+    shuffledItems.forEach(item => {
+      html += `<li class="list-item" draggable data-item-name="${item}">
+                 <span>${item}</span>
+                 <input type="hidden" value="0">
+               </li>`;
+    });
     return html;
   }
 

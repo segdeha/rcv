@@ -2,9 +2,9 @@
 <html>
   <head>
     <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ranked Choice Voting</title>
     <style>
-      /* element styles */
       body {
         font: 16px/1.33 sans-serif;
         margin: 0 auto;
@@ -26,11 +26,11 @@
         outline: none;
         padding: 0.5rem;
       }
-        input[type=text]:focus {
-          background: rgba(0, 0, 170, 0.067);
-          background: linear-gradient(0deg, rgba(0, 0, 170, 0.067) 0%, rgba(0, 0, 0, 0) 100%);
-          border-color: rgba(0, 0, 170, 0.67);
-        }
+      input[type=text]:focus {
+        background: rgba(0, 0, 170, 0.067);
+        background: linear-gradient(0deg, rgba(0, 0, 170, 0.067) 0%, rgba(0, 0, 0, 0) 100%);
+        border-color: rgba(0, 0, 170, 0.67);
+      }
       button {
         /* reset */
         appearance: none;
@@ -76,32 +76,119 @@
         margin: 2rem 0;
       }
 
-      /* named styles */
       #add-confirmation {
         display: none;
         font-style: italic;
       }
-        #add-confirmation.show {
-          display: inline;
-        }
+      #add-confirmation.show {
+        display: inline;
+      }
       .votes {
         align-items: flex-start;
         display: flex;
         gap: 2rem;
         justify-content: space-around;
       }
-        .votes section {
-          flex: 1;
-        }
+      .votes section {
+        flex: 1;
+      }
       #ballot, #results {
         border: solid 1rem #ccc;
         padding: 0 1rem;
       }
 
-      /* media queries */
+      .lists-container {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 30px;
+        justify-content: center;
+        max-width: 900px;
+        width: 100%;
+      }
+
+      .list-container {
+        background-color: white;
+        border-radius: 0.5rem;
+        box-shadow: 0 0.25rem 1rem rgba(0, 0, 0, 0.1);
+        display: flex;
+        flex: 1;
+        flex-direction: column;
+        min-width: 300px;
+        padding: 1rem;
+      }
+
+      .list-container h2 {
+        margin-bottom: 1rem;
+        text-align: center;
+      }
+
+      .item-list {
+        flex-grow: 1;
+        list-style: none;
+        margin: 0;
+        min-height: 3rem;
+        padding: 0;
+      }
+
+      .list-item {
+        align-items: left;
+        background-color: #eee;
+
+        /* grab handles */
+        background-image:
+          linear-gradient(to bottom, #ddd 50%, #bbb 50%),
+          linear-gradient(to bottom, #ddd 50%, #bbb 50%),
+          linear-gradient(to bottom, #ddd 50%, #bbb 50%);
+        background-position:
+          left 0.75rem top 0.95rem,
+          left 0.75rem center,
+          left 0.75rem bottom 0.95rem;
+        background-repeat: no-repeat;
+        background-size:
+          1.5rem 2px,
+          1.5rem 2px,
+          1.5rem 2px;
+
+        border: 1px solid #ccc;
+        border-radius: 0.5rem;
+        box-shadow: 0 0.25rem 1rem rgba(0, 0, 0, 0.1);
+        cursor: grab;
+        display: flex;
+        height: 2rem;
+        justify-content: space-between;
+        line-height: 2rem;
+        margin-bottom: 0.5rem;
+        padding: 0.5rem 1rem 0.5rem 2.9rem;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+      }
+        .list-item:last-child {
+          margin-bottom: 0;
+        }
+        .list-item.dragging {
+          opacity: 0.5;
+          transform: scale(0.98);
+          box-shadow: 0 0.25rem 0.5rem rgba(0, 0, 0, 0.2);
+          border: 1px dashed blue;
+        }
+      .drag-placeholder {
+        border: 2px dashed #666;
+        background-color: #eee;
+        min-height: 2rem;
+        border-radius: 0.5rem;
+        margin-bottom: 0.5rem;
+      }
+
       @media (max-width: 768px) {
         .votes {
           flex-direction: column;
+        }
+        .lists-container {
+          flex-direction: column;
+          align-items: center;
+        }
+        .list-container {
+          width: 90%;
+          max-width: 400px;
         }
       }
     </style>
@@ -133,10 +220,22 @@
         <hr>
         <h2>2. Vote here! 🗳️</h2>
         <p>Vote by first assigning a rank to each of the items for which you want to vote. Select “Do not rank” for the items for which you do not want to vote.</p>
-        <p>When you’re happy with your ballot, select “Cast ballot”. You can vote as many times as you want to simulate multiple people voting.
+        <p>When you’re happy with your ballot, select “Cast ballot”. You can vote as many times as you want to simulate multiple people voting.</p>
         <form id="ballot">
-          <div id="items">
-            <p><em>No items on which to vote just yet. Add an item to the ballot above.</em></p>
+          <p id="no-items"><em>No items on which to vote just yet. Add an item to the ballot above.</em></p>
+          <div id="items" class="lists-container">
+            <div class="list-container">
+              <h2>Ranked Candidates</h2>
+              <ul id="ranked" class="item-list"></ul>
+            </div>
+            <div class="list-container">
+              <h2>Unranked Candidates</h2>
+              <ul id="unranked" class="item-list">
+                <li class="list-item" draggable>Item A <input type="hidden" value="0"></li>
+                <li class="list-item" draggable>Item B <input type="hidden" value="0"></li>
+                <li class="list-item" draggable>Item C <input type="hidden" value="0"></li>
+              </ul>
+            </div>
           </div>
           <p>
             <button>Cast ballot</button>
@@ -146,7 +245,7 @@
       <section class="tally">
         <h2>3. Results here! 🏆</h2>
         <div id="results">
-            <p><em>No results just yet. Cast your ballot to see the tally.</em></p>
+        <p><em>No results just yet. Cast your ballot to see the tally.</em></p>
         </div>
       </section>
     </section>

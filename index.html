@@ -79,11 +79,14 @@
         margin: 2rem 0;
       }
       table {
-        border: solid 1px #666;
-        padding: 0.25rem;
+        background-color: #eee;
+        border-collapse: collapse;
+        border-radius: 1rem;
+        box-shadow: 0 0.25rem 1rem rgba(0, 0, 0, 0.1);
+        padding: 0.5rem;
       }
       th, td {
-        padding: 0.25rem 0.5rem;
+        padding: 0.5rem 1rem;
         text-align: center;
       }
       th {
@@ -93,7 +96,25 @@
       th:first-child, td:first-child {
         text-align: left;
       }
-      td.winner {
+      th:first-child, tr:nth-child(2) td:first-child {
+        border-top-left-radius: 0.5rem;
+      }
+      th:last-child, tr:nth-child(2) td:last-child {
+        border-top-right-radius: 0.5rem;
+      }
+      tr:last-child td:first-child {
+        border-bottom-left-radius: 0.5rem;
+      }
+      tr:last-child td:last-child {
+        border-bottom-right-radius: 0.5rem;
+      }
+      td {
+        background: white;
+      }
+      tr:hover td {
+        background: #e0e6fd;
+      }
+      td.winner, tr:hover td.winner {
         background: gold;
         font-weight: bold;
       }

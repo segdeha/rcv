@@ -13,7 +13,8 @@
 //   - candidate: string, unique among ranks
 //   - rank: number from 1 (highest ranked) to n, the number of candidates
 
-/*
+/* vote:
+
   {
     voter: 'Sally Ride',
     ranks: [
@@ -31,12 +32,14 @@
       },
     ],
   }
+
 */
 
 // output of a tally is an array of candidates, sorted in descending order by
 // 1st place ranks
 
-/*
+/* votes:
+
   [
     {
       candidate: 'Yellow Bird',
@@ -47,6 +50,7 @@
       ranks: [0, 1, 0], // 0 1sts, 1 2nd, 0 3rds
     },
   ]
+
 */
 
 /**
@@ -64,6 +68,7 @@ class RCV {
     this.result = [];
     // bind this so it works in the context of the sort
     this.compareArraysByCounts = this.compareArraysByCounts.bind(this);
+    this.maxRank = 0;
   }
 
   // extract candidates and create empty ranks arrays from array of votes
@@ -146,17 +151,16 @@ class RCV {
   }
 
   // sort by 1st place votes, 2nd place votes, etc.
-  sort(voters) {
-    this.maxRank = voters.length;
+  sort() {
     this.result.sort(this.compareArraysByCounts);
   }
 
-  tally(candidates, votes, voters) {
-    // sets up results array, but also clears it if votes exist
+  tally(candidates, votes) {
+    this.maxRank = candidates.length;
+    // map sets up results array, but also clears it if votes exist
     this.map(candidates); // do this first
     this.record(votes);   // do this second
-    this.sort(voters);    // do this third
-
+    this.sort();          // do this third
     return this.result;
   }
 }

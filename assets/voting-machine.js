@@ -75,10 +75,10 @@ class VotingMachine {
     const candidates = this.list();
     const votes      = this.votes;
     const voters     = this.voters();
-    const result = this.algo.tally(candidates, votes, voters);
+    const result     = this.algo.tally(candidates, votes);
     return {
-      voters: this.voters(),
       result,
+      voters,
     };
   }
 }

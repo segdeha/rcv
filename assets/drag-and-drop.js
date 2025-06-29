@@ -1,56 +1,91 @@
 class DragAndDrop {
+  static DRAG_THRESHOLD_PX = 2;
+
   constructor(list1Id, list2Id) {
     this.list1 = document.getElementById(list1Id);
     this.list2 = document.getElementById(list2Id);
-    this.draggedItem = null; // Stores the currently dragged list item
-
-    this.init(); // Initialize event listeners
+    this.draggedItem = null;
+    this.lastProcessedDragY = null;
+    this.observer = new MutationObserver(this.handleMutation);
+    this.init();
   }
 
   init() {
-    // Attach dragstart and dragend listeners to all existing list items
-    document.querySelectorAll('.list-item').forEach(item => {
-      this.addDragEventListeners(item);
-    });
+    const { list1, list2 } = this;
 
-    // Attach dragover, dragleave, and drop listeners to both list containers
-    this.list1.addEventListener('dragover', this.handleDragOver.bind(this));
-    this.list1.addEventListener('dragleave', this.handleDragLeave.bind(this));
-    this.list1.addEventListener('drop', this.handleDrop.bind(this));
+    list1.addEventListener('dragover', this.handleDragOver);
+    list1.addEventListener('dragleave', this.handleDragLeave);
+    list1.addEventListener('drop', this.handleDrop);
 
-    this.list2.addEventListener('dragover', this.handleDragOver.bind(this));
-    this.list2.addEventListener('dragleave', this.handleDragLeave.bind(this));
-    this.list2.addEventListener('drop', this.handleDrop.bind(this));
+    list2.addEventListener('dragover', this.handleDragOver);
+    list2.addEventListener('dragleave', this.handleDragLeave);
+    list2.addEventListener('drop', this.handleDrop);
 
-    // Initial update of positions when the page loads
-    document.addEventListener('DOMContentLoaded', this.updatePositions.bind(this));
+    const observerConfig = { childList: true };
+    this.observer.observe(this.list1, observerConfig);
+    this.observer.observe(this.list2, observerConfig);
   }
 
-  /**
-   * Adds dragstart and dragend event listeners to a given list item.
-   * @param {HTMLElement} item - The list item to attach listeners to.
-   */
-  addDragEventListeners(item) {
-    item.addEventListener('dragstart', this.handleDragStart.bind(this));
-    item.addEventListener('dragend', this.handleDragEnd.bind(this));
+  handleMutation = mutations => {
+    for (let i = 0; i < mutations.length; i += 1) {
+      const mu = mutations[i];
+      if (mu.type === 'childList' && mu.addedNodes.length > 0) {
+        for (let j = 0; j < mu.addedNodes.length; j += 1) {
+          const node = mu.addedNodes[j];
+          if (
+            node.nodeType === Node.ELEMENT_NODE &&
+            node.classList.contains('list-item') &&
+            !node.classList.contains('drag-placeholder')
+          ) {
+            this.addItemEventListeners();
+            break;
+          }
+        }
+      }
+    }
+  }
+
+  addItemEventListeners = () => {
+    const lis = document.querySelectorAll('.list-item');
+
+    if (lis.length === this.lastNumberOfItems) {
+      return;
+    }
+
+    this.lastNumberOfItems = lis.length;
+
+    lis.forEach(li => {
+      // Remove existing listeners first to prevent duplicates if called multiple times
+      // This is important to avoid memory leaks and multiple event firings.
+      li.removeEventListener('dragstart', this.handleDragStart);
+      li.removeEventListener('dragend', this.handleDragEnd);
+
+      // Now, add the listeners
+      li.addEventListener('dragstart', this.handleDragStart);
+      li.addEventListener('dragend', this.handleDragEnd);
+    });
+
+    // Update positions after refreshing listeners
+    // (important for initial load and after dynamic adds)
+    this.updatePositions();
   }
 
   /**
    * Event handler for dragstart on a list item.
    * @param {DragEvent} e
    */
-  handleDragStart(e) {
-    this.draggedItem = e.target;
+  handleDragStart = e => {
+    this.draggedItem = e.target.closest('.list-item');
     e.dataTransfer.effectAllowed = 'move';
-    setTimeout(() => {
-      this.draggedItem.classList.add('dragging');
-    }, 0);
+    window.requestAnimationFrame(() => {
+        this.draggedItem.classList.add('dragging');
+    });
   }
 
   /**
    * Event handler for dragend on a list item (cleanup).
    */
-  handleDragEnd() {
+  handleDragEnd = e => {
     if (this.draggedItem) {
       this.draggedItem.classList.remove('dragging');
       this.draggedItem = null;
@@ -67,52 +102,78 @@ class DragAndDrop {
   getDragAfterElement(container, y) {
     const draggableElements = [...container.querySelectorAll('.list-item:not(.dragging)')];
 
-    return draggableElements.reduce((closest, child) => {
+    for (const child of draggableElements) {
       const box = child.getBoundingClientRect();
-      const offset = y - box.top - box.height / 2; // Offset from center of child
-      if (offset < 0 && offset > closest.offset) {
-        return { offset: offset, element: child };
-      } else {
-        return closest;
+      // If the mouse Y position is above the midpoint of the current child element,
+      // then the dragged item should be inserted before this child.
+      // This creates a larger "insert before" zone, making drops more forgiving.
+      if (y < box.top + box.height / 2) {
+        return child;
       }
-    }, { offset: -Infinity }).element;
+    }
+
+    // If the mouse is below all draggable elements, return null to append to the end.
+    return null;
   }
 
   /**
    * Event handler for dragover on a list container.
    * @param {DragEvent} e
    */
-  handleDragOver(e) {
+  handleDragOver = e => {
     e.preventDefault();
     e.dataTransfer.dropEffect = 'move';
 
-    const list = e.currentTarget; // The list (ul) element being dragged over
+    // --- Filtering logic based on movement threshold ---
+    // Only process if the mouse has moved significantly since the last update
+    if (Math.abs(e.clientY - this.lastProcessedDragY) < DragAndDrop.DRAG_THRESHOLD_PX) {
+      return; // Cursor has not moved enough, skip this event
+    }
+    this.lastProcessedDragY = e.clientY; // Update last processed Y position
+
+    const list = e.currentTarget;
     const afterElement = this.getDragAfterElement(list, e.clientY);
 
-    // Remove any existing placeholder in this list
-    const currentPlaceholder = list.querySelector('.drag-placeholder');
-    if (currentPlaceholder) {
-      currentPlaceholder.remove();
-    }
+    let currentPlaceholder = list.querySelector('.drag-placeholder');
 
-    // Add a new placeholder
-    if (afterElement) {
-      const placeholder = document.createElement('div');
-      placeholder.classList.add('drag-placeholder');
-      list.insertBefore(placeholder, afterElement);
-    } else if (list.children.length === 0 || (list.children.length === 1 && list.querySelector('.dragging'))) {
-      // Special case for dropping into an empty list or if the only child is the dragged one
-      const placeholder = document.createElement('div');
-      placeholder.classList.add('drag-placeholder');
-      list.appendChild(placeholder);
+    // Determine the desired position (target parent and target sibling)
+    const targetParent = list;
+    const targetNextSibling = afterElement; // If afterElement is null, it means append to end
+
+    // Case 1: Placeholder exists
+    if (currentPlaceholder) {
+      // Check if placeholder is ALREADY in the desired position
+      if (currentPlaceholder.parentNode === targetParent && currentPlaceholder.nextElementSibling === targetNextSibling) {
+        return; // Already in the right spot, do nothing
+      } else {
+        // Placeholder exists but is in the wrong place, move it
+        // console.log("Moving existing placeholder");
+        if (targetNextSibling) {
+          targetParent.insertBefore(currentPlaceholder, targetNextSibling);
+        } else {
+          targetParent.appendChild(currentPlaceholder);
+        }
+      }
     }
+    // Case 2: Placeholder does NOT exist, and we need one
+    else {
+      // console.log("Creating new placeholder");
+      const newPlaceholder = document.createElement('div');
+      newPlaceholder.classList.add('drag-placeholder');
+      if (targetNextSibling) {
+        targetParent.insertBefore(newPlaceholder, targetNextSibling);
+      } else {
+        targetParent.appendChild(newPlaceholder);
+      }
+    }
+    // console.log('handleDragOver fired on:', list.id); // Log for debugging
   }
 
   /**
    * Event handler for dragleave on a list container.
    * @param {DragEvent} e
    */
-  handleDragLeave(e) {
+  handleDragLeave = e => {
     // Ensure the dragleave is from the list itself, not just leaving a child *within* the list
     // Check if relatedTarget is outside the current list
     if (!e.currentTarget.contains(e.relatedTarget)) {
@@ -127,7 +188,7 @@ class DragAndDrop {
    * Event handler for drop on a list container.
    * @param {DragEvent} e
    */
-  handleDrop(e) {
+  handleDrop = e => {
     e.preventDefault();
 
     // Clean up placeholder immediately on drop
@@ -156,43 +217,18 @@ class DragAndDrop {
   updatePositions() {
     // Update List 1 positions
     const list1Items = this.list1.querySelectorAll('.list-item');
-    list1Items.forEach((item, index) => {
-      const hiddenInput = item.querySelector('.item-position');
-      const positionSpan = item.querySelector('span'); // For display purposes
-      hiddenInput.value = index + 1; // 1-based position
-      positionSpan.textContent = `Pos: ${hiddenInput.value}`;
+    list1Items.forEach((item, idx) => {
+      const hiddenInput = item.querySelector('input[type="hidden"]');
+      hiddenInput.value = idx + 1; // 1-based position
     });
 
     // Update List 2 positions
     const list2Items = this.list2.querySelectorAll('.list-item');
     list2Items.forEach(item => {
-      const hiddenInput = item.querySelector('.item-position');
-      const positionSpan = item.querySelector('span'); // For display purposes
+      const hiddenInput = item.querySelector('input[type="hidden"]');
       hiddenInput.value = 0; // Set to 0 if in List 2
-      positionSpan.textContent = `Pos: ${hiddenInput.value}`;
     });
-
-    // console.log('Positions updated.');
-    // You can add logic here to emit events or send data to Retool
-    // For example, if you wanted to send the current state to Retool:
-    /*
-    const list1State = Array.from(list1Items).map(item => ({
-      id: item.dataset.itemId,
-      pos: item.querySelector('.item-position').value
-    }));
-    const list2State = Array.from(list2Items).map(item => ({
-      id: item.dataset.itemId,
-      pos: item.querySelector('.item-position').value
-    }));
-    // In a Retool app, you'd trigger a JS query like:
-    // Retool.triggerQuery('updateBackendData', { list1: list1State, list2: list2State });
-    */
   }
 }
-
-// Initialize the DragDropListManager when the DOM is fully loaded
-// document.addEventListener('DOMContentLoaded', () => {
-//   new DragDropListManager('list1', 'list2');
-// });
 
 export { DragAndDrop };

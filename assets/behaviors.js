@@ -162,10 +162,11 @@ class App {
   // read vote values for each candidate from the DOM
   gatherBallot() {
     // grab elements on-click because they may’ve changed since the last click
-    const selects = document.querySelectorAll('#ballot select');
+    const ranked = document.querySelectorAll('#ranked .list-item, #unranked .list-item');
     const votes = [];
-    selects.forEach(select => {
-      const { name, value } = select;
+    ranked.forEach(item => {
+      const name = item.dataset['item-name'];
+      const value = item.querySelector('input[type="hidden"]').value;
       votes.push({ candidate: name, rank: +value }); // cast value as a number
     });
     return votes;
@@ -173,10 +174,9 @@ class App {
 
   // build some HTML based on an array of strings
   // the html result from this function should be of the following form:
-  // <li class="list-item" draggable data-item-id="sub_001">
-  //   Item A
-  //   <input type="hidden" class="item-position" value="0">
-  //   <span>Pos: 0</span>
+  // <li class="list-item" draggable data-item-name="Item A">
+  //   <span>Item A</span>
+  //   <input type="hidden" value="0">
   // </li>
   buildBallot(items) {
     // randomize the order to avoid bias
@@ -184,7 +184,7 @@ class App {
 
     let html = '';
     shuffledItems.forEach(item => {
-      html += `<li class="list-item" draggable data-item-name="${item}">
+      html += `<li class="list-item" draggable="true" data-item-name="${item}">
                  <span>${item}</span>
                  <input type="hidden" value="0">
                </li>`;

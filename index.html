@@ -83,15 +83,6 @@
       #add-confirmation.show {
         display: inline;
       }
-      .votes {
-        align-items: flex-start;
-        display: flex;
-        gap: 2rem;
-        justify-content: space-around;
-      }
-      .votes section {
-        flex: 1;
-      }
       #ballot, #results {
         border: solid 1rem #ccc;
         padding: 0 1rem;
@@ -126,12 +117,20 @@
         flex-grow: 1;
         list-style: none;
         margin: 0;
-        min-height: 3rem;
+        min-height: 6rem;
         padding: 0;
       }
 
+      /* all properties that affect drag elements’ computed heights */
+      .list-item, .drag-placeholder {
+        border-width: 1px;
+        height: 2rem;
+        line-height: 2rem;
+        margin: 0.5rem 0;
+        padding: 0.5rem 1rem 0.5rem 2.9rem;
+      }
       .list-item {
-        align-items: left;
+        align-items: center;
         background-color: #eee;
 
         /* grab handles */
@@ -149,38 +148,35 @@
           1.5rem 2px,
           1.5rem 2px;
 
-        border: 1px solid #ccc;
+        border-color: #ccc;
+        border-style: solid;
         border-radius: 0.5rem;
         box-shadow: 0 0.25rem 1rem rgba(0, 0, 0, 0.1);
         cursor: grab;
         display: flex;
-        height: 2rem;
         justify-content: space-between;
-        line-height: 2rem;
-        margin-bottom: 0.5rem;
-        padding: 0.5rem 1rem 0.5rem 2.9rem;
         transition: transform 0.2s ease, box-shadow 0.2s ease;
       }
-        .list-item:last-child {
-          margin-bottom: 0;
+        .list-item span {
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
         }
         .list-item.dragging {
+          border-color: #ccc;
+          border-style: dashed;
           opacity: 0.5;
-          transform: scale(0.98);
-          box-shadow: 0 0.25rem 0.5rem rgba(0, 0, 0, 0.2);
-          border: 1px dashed blue;
         }
       .drag-placeholder {
-        border: 2px dashed #666;
+        border-color: blue;
+        border-style: dashed;
         background-color: #eee;
-        min-height: 2rem;
         border-radius: 0.5rem;
-        margin-bottom: 0.5rem;
       }
 
       @media (max-width: 768px) {
-        .votes {
-          flex-direction: column;
+        body {
+          max-width: 90%;
         }
         .lists-container {
           flex-direction: column;
@@ -204,51 +200,52 @@
       <li>This process repeats until a candidate exceeds 50% of 1st place votes.</li>
     </ol>
     <hr>
-    <section class="votes">
-      <section class="ballot">
-        <h2>1. Add to the ballot 📝</h2>
-        <form id="add">
-          <label>
-            Item to add to ballot<br>
-            <input type="text" name="item">
-            <span aria-hidden id="add-confirmation">Item added ✅</span>
-          </label>
-          <p>
-            <button>Add item to ballot</button>
-          </p>
-        </form>
-        <hr>
-        <h2>2. Vote here! 🗳️</h2>
-        <p>Vote by first assigning a rank to each of the items for which you want to vote. Select “Do not rank” for the items for which you do not want to vote.</p>
-        <p>When you’re happy with your ballot, select “Cast ballot”. You can vote as many times as you want to simulate multiple people voting.</p>
-        <form id="ballot">
-          <p id="no-items"><em>No items on which to vote just yet. Add an item to the ballot above.</em></p>
-          <div id="items" class="lists-container">
-            <div class="list-container">
-              <h2>Ranked Candidates</h2>
-              <ul id="ranked" class="item-list"></ul>
-            </div>
-            <div class="list-container">
-              <h2>Unranked Candidates</h2>
-              <ul id="unranked" class="item-list">
-                <li class="list-item" draggable>Item A <input type="hidden" value="0"></li>
-                <li class="list-item" draggable>Item B <input type="hidden" value="0"></li>
-                <li class="list-item" draggable>Item C <input type="hidden" value="0"></li>
-              </ul>
-            </div>
+    <section class="ballot">
+      <h2>1. Add to the ballot 📝</h2>
+      <form id="add">
+        <label>
+          Item to add to ballot<br>
+          <input type="text" name="item">
+          <span aria-hidden id="add-confirmation">Item added ✅</span>
+        </label>
+        <p>
+          <button>Add item to ballot</button>
+        </p>
+      </form>
+      <hr>
+      <h2>2. Vote here! 🗳️</h2>
+      <p>Vote by first assigning a rank to each of the items for which you want to vote. Select “Do not rank” for the items for which you do not want to vote.</p>
+      <p>When you’re happy with your ballot, select “Cast ballot”. You can vote as many times as you want to simulate multiple people voting.</p>
+      <form id="ballot">
+        <p id="no-items"><em>No items on which to vote just yet. Add an item to the ballot above.</em></p>
+        <div id="items" class="lists-container">
+          <div class="list-container">
+            <h2>Ranked Candidates</h2>
+            <ul id="ranked" class="item-list"><!--
+              <li class="list-item" draggable="true"><span>Item A</span> <input type="hidden" value="1"></li>
+              <li class="list-item" draggable="true"><span>Item B</span> <input type="hidden" value="2"></li>
+              <li class="list-item" draggable="true"><span>Item C</span> <input type="hidden" value="3"></li>
+            --></ul>
           </div>
-          <p>
-            <button>Cast ballot</button>
-          </p>
-        </form>
-      </section>
-      <section class="tally">
-        <h2>3. Results here! 🏆</h2>
-        <div id="results">
-        <p><em>No results just yet. Cast your ballot to see the tally.</em></p>
+          <div class="list-container">
+            <h2>Unranked Candidates</h2>
+            <ul id="unranked" class="item-list"><!--
+              <li class="list-item" draggable="true"><span>Item D</span> <input type="hidden" value="0"></li>
+              <li class="list-item" draggable="true"><span>Item E</span> <input type="hidden" value="0"></li>
+              <li class="list-item" draggable="true"><span>Item F</span> <input type="hidden" value="0"></li>
+            --></ul>
+          </div>
         </div>
-      </section>
-    </section>
+        <p>
+          <button>Cast ballot</button>
+        </p>
+      </form>
+      <hr>
+      <h2>3. Results here! 🏆</h2>
+      <div id="results">
+        <p><em>No results just yet. Cast your ballot to see the tally.</em></p>
+      </div>
+  </section>
     <footer>
       <hr>
       <p>Copyright &copy; 2025 Andrew Hedges. All Rights Reserved.</p>

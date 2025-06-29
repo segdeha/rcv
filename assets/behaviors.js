@@ -122,6 +122,7 @@ class App {
     // votes are associated with a name
     // submitting votes for an existing name overwrites their previous vote
     // if voter name is blank, generate one
+    // use crypto.randomUUID() to generate unique IDs for voters in production
     const voter = voterInput.value || this.rnd.getName();
 
     // gather rankings for all of the candidates

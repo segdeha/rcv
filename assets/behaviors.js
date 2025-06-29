@@ -16,9 +16,11 @@ class App {
       addConfirm:   document.querySelector('#add-confirmation'),
       addForm:      document.querySelector('#add'),
       ballotButton: document.querySelector('#ballot button'),
-      itemInput:    document.querySelector('input[name=item]'),
+      itemInput:    document.querySelector('#add input[name=item]'),
       itemsList:    document.querySelector('#unranked'),
+      noItems:      document.querySelector('#no-items'),
       resultsList:  document.querySelector('#results'),
+      voterInput:   document.querySelector('#ballot input[name=voter]'),
     };
 
     // instantiate our tools
@@ -46,6 +48,13 @@ class App {
       }
     }
     return { isDupe, isSimilar };
+  }
+
+  // return the number of times the value shows up in the array
+  countValue(array, value) {
+    return array.reduce((accumulator, currentValue) => {
+      return accumulator + (currentValue === value ? 1 : 0);
+    }, 0);
   }
 
   // takes an array of any values
@@ -108,11 +117,19 @@ class App {
 
   handleVote(evt) {
     evt.preventDefault(); // don't submit the form
-    const { resultsList } = this.dom;
+    const { resultsList, voterInput } = this.dom;
+
+    // votes are associated with a name
+    // submitting votes for an existing name overwrites their previous vote
+    // if voter name is blank, generate one
+    const voter = voterInput.value || this.rnd.getName();
+
     // gather rankings for all of the candidates
     const votes = this.gatherBallot();
+
     // gather simple array of ranks for validation purposes
     const ranks = votes.map(vote => vote.rank).filter(vote => vote > 0);
+
     // if there are no items, alert the user
     if (0 === votes.length) {
       alert('Add at least one item to the ballot before casting your vote.');
@@ -128,9 +145,6 @@ class App {
       }
       else {
         // submit ballot
-        // votes are associated with a name
-        // submitting votes for an existing name overwrites their previous vote
-        const voter = this.rnd.getName();
         this.vm.vote(voter, votes);
         // tally votes
         const tally = this.vm.tally();
@@ -149,10 +163,11 @@ class App {
   }
 
   addItem(item) {
-    const { addConfirm, itemInput, itemsList } = this.dom;
+    const { addConfirm, itemInput, itemsList, noItems } = this.dom;
     this.vm.add(item);
     itemInput.value = '';
     itemInput.blur();
+    noItems.style.display = 'none';
     addConfirm.classList.add('show');
     const items = this.vm.list();
     const html = this.buildBallot(items);
@@ -213,13 +228,22 @@ class App {
   //   </tr>
   // <table>
   buildResults(tally) {
+    const maxRank = tally.result.length;
     const ordinals = ['1st', '2nd', '3rd'];
-    let ths = '';
-    let rows = '';
+
+    // find percentage of 1sts for each candidate
+    let totalFirsts = 0;
+    tally.result.forEach(vote => {
+      vote.firsts = this.countValue(vote.ranks, 1);
+      totalFirsts += vote.firsts;
+    });
+    tally.result.forEach(vote => {
+      vote.pctFirsts = Math.round(vote.firsts / totalFirsts * 100);
+    });
+
     // build column headers
-    // TODO replace this with something from the Voting Machine
-    const ranked = document.querySelectorAll('#ranked .list-item');
-    for (let i = 0; i < ranked.length; i += 1) {
+    let ths = '';
+    for (let i = 0; i < maxRank; i += 1) {
       if ('undefined' !== typeof ordinals[i]) {
         ths += `<th>${ordinals[i]}</th>`;
       }
@@ -227,8 +251,23 @@ class App {
         ths += `<th>${ i + 1 }th</th>`;
       }
     }
+    ths += '<th>DNR</th>';
+
     // build rows
-    for (let i = 0; i < tally.length; i += 1) {}
+    let trs = '';
+    tally.result.forEach(vote => {
+      const tds = [`<td>${vote.candidate}</td>`];
+      // percentage of 1sts
+      const winner = vote.pctFirsts >= 50 ? ' class="winner"' : ''
+      tds.push(`<td${winner}>${vote.pctFirsts}</td>`);
+      for (let i = 1; i <= maxRank; i += 1) {
+        tds.push(`<td>${this.countValue(vote.ranks, i)}</td>`);
+      }
+      // did not ranks come last
+      tds.push(`<td>${this.countValue(vote.ranks, 0)}</td>`);
+      trs += `<tr>${tds.join('')}</tr>`;
+    });
+
     return `
       <table>
         <tr>
@@ -236,7 +275,7 @@ class App {
           <th>%</th>
           ${ths}
         </tr>
-        ${rows}
+        ${trs}
       </table>
       <p><strong>Voters:</strong> ${tally.voters.join(', ')}</p>
     `

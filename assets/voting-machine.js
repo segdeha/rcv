@@ -53,12 +53,15 @@ class VotingMachine {
 
   // record a vote (array of rankings of items associated with a name)
   vote(voter, ranks) {
-    // TODO make sure the voter is unique
-    // TODO if the voter exists, replace their vote
-    this.votes.push({
-      voter,
-      ranks,
-    });
+    // if the voter exists, replace their vote, otherwise add it
+    const idx = this.votes.findIndex(item => item.voter === voter);
+    const vote = { voter, ranks };
+    if (idx > -1) {
+      this.votes[idx] = vote;
+    }
+    else {
+      this.votes.push(vote);
+    }
   }
 
   // return an array of the names of the voters
@@ -68,7 +71,7 @@ class VotingMachine {
 
   // tally the votes
   tally() {
-    const result = this.algo.tally(this.votes);
+    const result = this.algo.tally(this.voters(), this.list(), this.votes);
     return {
       voters: this.voters(),
       result,

@@ -10,6 +10,12 @@
         margin: 0 auto;
         max-width: 1024px;
       }
+      form {
+        background-color: white;
+        border-radius: 0.5rem;
+        box-shadow: 0 0.25rem 1rem rgba(0, 0, 0, 0.1);
+        padding: 0.5rem 1.5rem;
+      }
       input, button {
         transition: all 0.2s;
       }
@@ -72,6 +78,25 @@
         height: 1px;
         margin: 2rem 0;
       }
+      table {
+        border: solid 1px #666;
+        padding: 0.25rem;
+      }
+      th, td {
+        padding: 0.25rem 0.5rem;
+        text-align: center;
+      }
+      th {
+        background: #eee;
+        font-weight: bold;
+      }
+      th:first-child, td:first-child {
+        text-align: left;
+      }
+      td.winner {
+        background: gold;
+        font-weight: bold;
+      }
       footer {
         margin: 2rem 0;
       }
@@ -82,10 +107,6 @@
       }
       #add-confirmation.show {
         display: inline;
-      }
-      #ballot, #results {
-        border: solid 1rem #ccc;
-        padding: 0 1rem;
       }
 
       .lists-container {
@@ -211,6 +232,25 @@
         <p>
           <button>Add item to ballot</button>
         </p>
+
+        <!-- TODO remove, not intended for production -->
+        <p>
+          <a id="seed" href="#">Seed ballot</a>
+        </p>
+        <script>
+          document.getElementById('seed').addEventListener('click', evt => {
+            evt.preventDefault();
+            const input = document.querySelector('#add input');
+            const button = document.querySelector('#add button');
+            const candidates = ['Whale', 'Dog', 'Cat', 'Monkey', 'Bird', 'Horse'];
+            candidates.forEach(candidate => {
+              input.value = candidate;
+              button.click();
+            });
+          });
+        </script>
+        <!-- TODO remove, not intended for production -->
+
       </form>
       <hr>
       <h2>2. Vote here! 🗳️</h2>
@@ -221,21 +261,17 @@
         <div id="items" class="lists-container">
           <div class="list-container">
             <h2>Ranked Candidates 👍</h2>
-            <ul id="ranked" class="item-list"><!--
-              <li class="list-item" draggable="true"><span>Item A</span> <input type="hidden" value="1"></li>
-              <li class="list-item" draggable="true"><span>Item B</span> <input type="hidden" value="2"></li>
-              <li class="list-item" draggable="true"><span>Item C</span> <input type="hidden" value="3"></li>
-            --></ul>
+            <ul id="ranked" class="item-list"></ul>
           </div>
           <div class="list-container">
             <h2>Unranked Candidates 👎</h2>
-            <ul id="unranked" class="item-list"><!--
-              <li class="list-item" draggable="true"><span>Item D</span> <input type="hidden" value="0"></li>
-              <li class="list-item" draggable="true"><span>Item E</span> <input type="hidden" value="0"></li>
-              <li class="list-item" draggable="true"><span>Item F</span> <input type="hidden" value="0"></li>
-            --></ul>
+            <ul id="unranked" class="item-list"></ul>
           </div>
         </div>
+        <label>
+          Voter name<br>
+          <input type="text" name="voter">
+        </label>
         <p>
           <button>Cast ballot</button>
         </p>

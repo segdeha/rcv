@@ -112,7 +112,7 @@ class App {
     // gather rankings for all of the candidates
     const votes = this.gatherBallot();
     // gather simple array of ranks for validation purposes
-    const ranks = votes.map(vote => vote.rank);
+    const ranks = votes.map(vote => vote.rank).filter(vote => vote > 0);
     // if there are no items, alert the user
     if (0 === votes.length) {
       alert('Add at least one item to the ballot before casting your vote.');
@@ -217,7 +217,9 @@ class App {
     let ths = '';
     let rows = '';
     // build column headers
-    for (let i = 0; i < tally.voters.length; i += 1) {
+    // TODO replace this with something from the Voting Machine
+    const ranked = document.querySelectorAll('#ranked .list-item');
+    for (let i = 0; i < ranked.length; i += 1) {
       if ('undefined' !== typeof ordinals[i]) {
         ths += `<th>${ordinals[i]}</th>`;
       }

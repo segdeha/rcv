@@ -239,7 +239,7 @@ class App {
       totalFirsts += vote.firsts;
     });
     tally.result.forEach(vote => {
-      vote.pctFirsts = Math.round(vote.firsts / totalFirsts * 100);
+      vote.pctFirsts = 0 === vote.firsts ? vote.firsts : Math.round(vote.firsts / totalFirsts * 100);
     });
 
     // build column headers

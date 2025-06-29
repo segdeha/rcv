@@ -151,7 +151,7 @@ class RCV {
     this.result.sort(this.compareArraysByCounts);
   }
 
-  tally(voters, candidates, votes) {
+  tally(candidates, votes, voters) {
     // sets up results array, but also clears it if votes exist
     this.map(candidates); // do this first
     this.record(votes);   // do this second

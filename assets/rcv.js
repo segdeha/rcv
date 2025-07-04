@@ -3,56 +3,6 @@
 // responsibilities:
 // - calculate the winner based on a data structure of ranked-choice votes
 
-// tally the votes
-
-// votes is an array of cast ballots
-// a ballot is an object with 2 properties:
-// - voter: string, unique among ballots
-// - ranks: array of rank objects
-//   a rank object has 2 properties:
-//   - candidate: string, unique among ranks
-//   - rank: number from 1 (highest ranked) to n, the number of candidates
-
-/* vote:
-
-  {
-    voter: 'Sally Ride',
-    ranks: [
-      {
-        candidate: 'Chipotle Cholula',
-        rank: 2, // second highest rank
-      },
-      {
-        candidate: 'Tabasco',
-        rank: 0, // Do Not Rank
-      },
-      {
-        candidate: 'Yellow Bird',
-        rank: 1, // highest rank
-      },
-    ],
-  }
-
-*/
-
-// output of a tally is an array of candidates, sorted in descending order by
-// 1st place ranks
-
-/* votes:
-
-  [
-    {
-      candidate: 'Yellow Bird',
-      ranks: [1, 0, 0], // 1 1st, 0 2nds, 0 3rds
-    },
-    {
-      candidate: 'Chipotle Cholula',
-      ranks: [0, 1, 0], // 0 1sts, 1 2nd, 0 3rds
-    },
-  ]
-
-*/
-
 /**
  * RCV uses the common ranked-choice voting method of counting the first place
  * votes, then eliminating the candidate with the fewest votes and reallocating
@@ -61,56 +11,52 @@
  */
 
 class RCV {
+  static STATUS_ACTIVE = 'active';
+  static STATUS_EXHAUSTED = 'exhausted';
+  static STATUS_ELIMINATED = 'eliminated';
+
   constructor() {
     // array of candidates & statuses
     // [ { candidate: <string>, status: 'active'|'eliminated' }, ]
     this.candidates = [];
+
     // array of results from each voting round
     // [ { candidate: <string>, votes: <number of allocated votes> }, ]
-    this.rounds = [];
-    // array of raw votes, each of which starts with the following shape:
-    // {
-    //   voter: 'Sally Ride',
-    //   ranks: [
-    //     {
-    //       candidate: 'Chipotle Cholula',
-    //       rank: 2, // second highest rank
-    //     },
-    //     {
-    //       candidate: 'Tabasco',
-    //       rank: 0, // Do Not Rank
-    //     },
-    //     {
-    //       candidate: 'Yellow Bird',
-    //       rank: 1, // highest rank
-    //     },
-    //   ],
-    // }
-    // on initialization, each vote is given the following additional property:
-    //   status: 'active'
-    this.votes = [];
-
-// all of the following is sus until further notice
-    // intermediary object to make it efficient to record raw votes
-    this.results = {};
-    // array of results to make it easy to sort and display
-    this.result = [];
-    // bind this so it works in the context of the sort
-    this.compareArraysByCounts = this.compareArraysByCounts.bind(this);
-    this.maxRank = 0;
+   this.rounds = [];
   }
 
   // extract candidates and mark each as 'active' to start
   map(candidates) {
-    this.candidates = candidates.map(candidate => {
+    return candidates.map(candidate => {
       return {
         candidate,
-        status: 'active',
+        status: RCV.STATUS_ACTIVE,
       };
     });
   }
 
-  // record the raw votes for each voter, set to active to start
+  // prepare raw votes for each voter:
+  // - set to active to start
+  // - sort ranks by rank
+  /* raw vote:
+    {
+      voter: 'Sally Ride',
+      ranks: [
+        {
+          candidate: 'Chipotle Cholula',
+          rank: 2, // second highest rank
+        },
+        {
+          candidate: 'Tabasco',
+          rank: 0, // Do Not Rank
+        },
+        {
+          candidate: 'Yellow Bird',
+          rank: 1, // highest rank
+        },
+      ],
+    }
+  */
   // shape of the resulting objects in the votes array should be as follows:
   // {
   //   voter: '<string>',
@@ -119,58 +65,50 @@ class RCV {
   //     { candidate: '<string>', rank: <number> },
   //   ],
   // }
-  record(votes) {
-    const dnrs = votes.filter(vote => 0 === vote.rank);
-    const ranked = votes.filter(vote => vote.rank > 0);
-    // sort only non DNRs
-    ranked.sort((a, b) => {
-      const rankA = a.rank;
-      const rankB = b.rank;
-      return rankA - rankB;
-    });
-    this.votes = [...ranked, ...dnrs].map(vote => {
-      vote.status = 'active';
-      return vote;
+  prep(votes) {
+    // loop through votes
+    // for each vote, add `status:'active'` and order the ranks 1, 2, ... n, 0
+    return votes.map(vote => {
+      let { voter, ranks } = vote;
+      const dnrs = ranks.filter(rank => 0 === rank.rank);
+      const ranked = ranks.filter(rank => rank.rank > 0);
+      // sort only non DNRs
+      ranked.sort((a, b) => {
+        const rankA = a.rank;
+        const rankB = b.rank;
+        return rankA - rankB;
+      });
+      ranks = [...ranked, ...dnrs];
+      return {
+        voter,
+        status: RCV.STATUS_ACTIVE,
+        ranks,
+      };
     });
   }
 
-// Jeep not cheap
-// $1,663.18 * 1.02 = $1,696.44
-
-  // find the highest active candidate for a given ballot
-  // ranks are sorted at this point, thanks to the `record`` method
+  // allocate a ballot to a candidate (i.e., find the highest active candidate
+  // for a given ballot
+  // ranks are sorted at this point, thanks to the `prep` method
   // with DNRs listed last
-  allocate(vote) {
-    // grab only active candidates
-    const actives = this.candidates.filter(candidate => {
-      return 'active' === candidate.status;
-    });
+  // if no valid candidate is found, mark the ballot as exhausted
+  allocate(ballot, activeBallots) {
     // loop through the voter’s ranks in descending order, stop when an active
     // candidate is found
-    // {
-    //   voter: 'Sally Ride',
-    //   ranks: [
-    //     {
-    //       candidate: 'Chipotle Cholula',
-    //       rank: 2, // second highest rank
-    //     },
-    //     {
-    //       candidate: 'Tabasco',
-    //       rank: 0, // Do Not Rank
-    //     },
-    //     {
-    //       candidate: 'Yellow Bird',
-    //       rank: 1, // highest rank
-    //     },
-    //   ],
-    // }
-    for (let i = 0; i < vote.ranks; i += 1) {
-      const { candidate, rank } = vote.ranks[i];
-      if (rank > 0 && actives.indexOf(candidate) > -1) {
-        return candidate;
+    for (let i = 0; i < ballot.ranks.length; i += 1) {
+      const { candidate, rank } = ballot.ranks[i];
+      // does at least 1 active candidate exist with a rank > 0?
+      if (rank > 0 && activeBallots.length > 0) {
+        // return the first candidate that matches, if it’s active
+        if (this.candidates.filter(item => {
+          return item.status === RCV.STATUS_ACTIVE && item.candidate === candidate;
+        }).length > 0) {
+          return candidate;
+        }
       }
     }
-    vote.status = 'exhausted';
+    // no candidates matched, so this ballot is exhausted
+    ballot.status = RCV.STATUS_EXHAUSTED;
     return null;
   }
 
@@ -264,10 +202,22 @@ Repeat (for each round) until a winner is found:
 - Return to Step 1 (Tally First Preferences) with the updated set of active candidates and the redistributed votes.
 */
 
+  // TODO handle ties?
+  count(votes) {
+    const activeBallots = votes.filter(vote => {
+      return vote.status === RCV.STATUS_ACTIVE;
+    });
+    const allocated = activeBallots.map(ballot => {
+      return this.allocate(ballot, activeBallots);
+    });
+    const tally = this.countOccurrences(allocated);
+    return tally;
+  }
+
   // this is where we RCV/IRV
   reduce() {
 
-console.log('RCV.reduce', 'this.result', this.result)
+// console.log('RCV.reduce', 'this.result', this.result)
 
     // did any candidate get more than 50% of the active 1st place votes?
     // if not, find the candidate(s) with the fewest 1st place votes
@@ -278,12 +228,11 @@ console.log('RCV.reduce', 'this.result', this.result)
   }
 
   tally(candidates, votes) {
-    this.maxRank = candidates.length;
     // map sets up results array, but also clears it if votes exist
-    this.map(candidates); // do this first
-    this.record(votes);   // do this second
-    this.sort();          // do this third
-    this.reduce();        // do this last
+    this.candidates = this.map(candidates); // do this first
+    this.votes      = this.prep(votes);     // do this second
+    // this.sort();          // do this third
+    // this.reduce();        // do this last
     return this.result;
   }
 }

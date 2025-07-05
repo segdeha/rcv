@@ -200,85 +200,125 @@ class App {
 
     let html = '';
     shuffledItems.forEach(item => {
-      html += `<li class="list-item" draggable="true" data-item-name="${item}">
-                 <span>${item}</span>
-                 <input type="hidden" value="0">
-               </li>`;
+      html += `
+        <li class="list-item" draggable="true" data-item-name="${item}">
+          <span>${item}</span>
+          <input type="hidden" value="0">
+        </li>
+      `;
     });
     return html;
   }
 
   // build some HTML based on the tallied voting results
-  // - table: Candidate, %, 1sts, 2nds, 3rds, ...
-  // - in order of 1st place votes, descending order
-  // - item name, percentage of 1st place votes, number of 1st place votes, etc.
-  //
-  // the html result from this function should be of the following form:
-  // <table>
-  //   <tr>
-  //     <th>Candidate</th>
-  //     <th>%</th>
-  //     <th>1sts</th>
-  //     <th>2nds</th>
-  //   </tr>
-  //   <tr>
-  //     <td>Chipotle Cholula</td>
-  //     <td>43%</td>
-  //     <td>71</td>
-  //     <td>83</td>
-  //   </tr>
-  // <table>
   buildResults(tally) {
-    const maxRank = tally.result.length;
+    const { voters, result } = tally;
+    const { candidates, tally: tally_ } = result;
+    const { rounds, winners } = tally_;
+
+// console.log('App.buildResults', 'candidates', candidates)
+// console.log('App.buildResults', 'rounds', rounds)
+// console.log('App.buildResults', 'voters', voters)
+// console.log('App.buildResults', 'winners', winners)
+
+    const maxRank = candidates.length;
     const ordinals = ['1st', '2nd', '3rd'];
 
-    // find percentage of 1sts for each candidate
-    let totalFirsts = 0;
-    tally.result.forEach(vote => {
-      vote.firsts = this.countValue(vote.ranks, 1);
-      totalFirsts += vote.firsts;
-    });
-    tally.result.forEach(vote => {
-      vote.pctFirsts = 0 === vote.firsts ? vote.firsts : Math.round(vote.firsts / totalFirsts * 100);
-    });
+    let html = '';
 
+    // display a table of the raw voting results
     // build column headers
-    let ths = '';
+    let ths_raw = '';
     for (let i = 0; i < maxRank; i += 1) {
       if ('undefined' !== typeof ordinals[i]) {
-        ths += `<th>${ordinals[i]}</th>`;
+        ths_raw += `<th>${ordinals[i]}</th>`;
       }
       else {
-        ths += `<th>${ i + 1 }th</th>`;
+        ths_raw += `<th>${ i + 1 }th</th>`;
       }
     }
-    ths += '<th>DNR</th>';
+    ths_raw += '<th>DNR</th>';
 
-    // build rows
-    let trs = '';
-    tally.result.forEach(vote => {
-      const tds = [`<td>${vote.candidate}</td>`];
-      // percentage of 1sts
-      const winner = vote.pctFirsts >= 50 ? ' class="winner"' : ''
-      tds.push(`<td${winner}>${vote.pctFirsts}</td>`);
+    let trs_raw = '';
+    candidates.forEach(candidate => {
+      let tr = '<tr>';
+      tr += `<td>${candidate.candidate}</td>`;
       for (let i = 1; i <= maxRank; i += 1) {
-        tds.push(`<td>${this.countValue(vote.ranks, i)}</td>`);
+        if ('undefined' !== typeof candidate.counts[i]) {
+          tr += `<td>${candidate.counts[i]}</td>`;
+        }
+        else {
+          tr += `<td>0</td>`;
+        }
       }
-      // did not ranks come last
-      tds.push(`<td>${this.countValue(vote.ranks, 0)}</td>`);
-      trs += `<tr>${tds.join('')}</tr>`;
+      tr += 'undefined' !== typeof candidate.counts[0] ?
+        `<td>${candidate.counts[0]}</td>` :
+        `<td>0</td>`;
+
+      tr += '</tr>';
+      trs_raw += tr;
     });
 
-    return `
+    // raw votes
+    html += `
       <table>
         <tr>
           <th>Candidate</th>
-          <th>%</th>
-          ${ths}
+          ${ths_raw}
         </tr>
-        ${trs}
+        ${trs_raw}
       </table>
-      <p><strong>Voters:</strong> ${tally.voters.join(', ')}</p>
+    `;
+
+    // track the round for display purposes
+    for (let i = 0; i < rounds.length; i += 1) {
+      const round = rounds[i];
+      const { counts } = round;
+      const candidates = Object.keys(counts).map(key => {
+        return { candidate: key, counts: counts[key] };
+      });
+      candidates.sort((a, b) => {
+        return b.counts.count - a.counts.count;
+      });
+
+      html += `
+        <table>
+          <tr>
+            <th colspan="3">Round: ${i + 1} (${round.total} valid ${round.total === 1 ? 'vote' : 'votes'})</th>
+          </tr>
+          <tr>
+            <th>Candidate</th>
+            <th>Vote %</th>
+            <th>Allocated</th>
+          </tr>
+      `;
+
+      // build rows
+      let trs_rounds = '';
+      candidates.forEach(candidate => {
+        const { candidate: name, counts } = candidate;
+        const { count, percentage } = counts;
+
+        const winner = percentage >= 50 ? ' class="winner"' : '';
+
+        trs_rounds += `
+          <tr>
+            <td>${name}</td>
+            <td${winner}>${percentage}</td>
+            <td>${count}</td>
+          </tr>
+        `;
+      });
+
+      html += `
+          ${trs_rounds}
+        </table>
+      `;
+    }
+
+    return `
+      ${html}
+      <p><strong>Voters:</strong> ${voters.join(', ')}</p>
     `
   }
 

@@ -94,8 +94,13 @@ function deepCompare(a, b) {
 const results = [];
 
 function addResult(func, actual, expected) {
+  const stringified = {
+    actual: JSON.stringify(actual),
+    expected: JSON.stringify(expected),
+  };
   // compare
-  const same = deepCompare(actual, expected);
+  // const same = deepCompare(actual, expected);
+  const same = stringified.actual === stringified.expected;
   // display
   results.push(`
 <h2>${func}</h2>
@@ -106,8 +111,8 @@ function addResult(func, actual, expected) {
     <th>Expected</th>
   </tr>
   <tr>
-    <td><code>${JSON.stringify(actual)}</code></td>
-    <td><code>${JSON.stringify(expected)}</code></td>
+    <td><code>${stringified.actual}</code></td>
+    <td><code>${stringified.expected}</code></td>
   </tr>
 </table>
 `);
@@ -117,7 +122,9 @@ function addResult(func, actual, expected) {
 
 // candidates
 const candidatesActual = ['Yellow Bird', 'Chipotle Cholula', 'Tabasco'];
+const candidatesExtendedActual = ['Yellow Bird', 'Chipotle Cholula', 'Tabasco', 'Sriracha'];
 const candidatesExpected = [{candidate:'Yellow Bird',status:RCV.STATUS_ACTIVE},{candidate:'Chipotle Cholula',status:RCV.STATUS_ACTIVE},{candidate:'Tabasco',status:RCV.STATUS_ACTIVE}];
+const candidatesExtendedExpected = [{candidate:'Yellow Bird',status:RCV.STATUS_ACTIVE},{candidate:'Chipotle Cholula',status:RCV.STATUS_ACTIVE},{candidate:'Tabasco',status:RCV.STATUS_ACTIVE},{candidate:'Sriracha',status:RCV.STATUS_ACTIVE}];
 
 // votes
 // {
@@ -142,25 +149,59 @@ const exhaustedVoteExpected = null;
 const arrayNums = [1, 2, 2, 3, 3, 3];
 const arrayStrs = ['one', 'two', 'two', 'three', 'three', 'three'];
 const arrayMixd = [1, 2, 2, 'three', 'three', 'three'];
-const countsNums  = {1:1,2:2,3:3};
-const countsStrs  = {'one':1,'two':2,'three':3};
-const countsMixds = {1:1,2:2,'three':3};
+const countsNums  = {"total":6,"counts":{"1":{"count":1,"percentage":17},"2":{"count":2,"percentage":33},"3":{"count":3,"percentage":50}}};
+const countsStrs  = {"total":6,"counts":{"one":{"count":1,"percentage":17},"two":{"count":2,"percentage":33},"three":{"count":3,"percentage":50}}};
+const countsMixds = {"total":6,"counts":{"1":{"count":1,"percentage":17},"2":{"count":2,"percentage":33},"three":{"count":3,"percentage":50}}};
 
-// tally votes
-const tallyVotes = [
+// count votes
+const countVotes = [
   { voter: 'Sally Ride',    status: RCV.STATUS_ACTIVE, ranks: [{ candidate: 'Yellow Bird', rank: 1 },{ candidate: 'Chipotle Cholula', rank: 2 },{ candidate: 'Tabasco', rank: 0 }]},
   { voter: 'Father Time',   status: RCV.STATUS_ACTIVE, ranks: [{ candidate: 'Yellow Bird', rank: 1 },{ candidate: 'Chipotle Cholula', rank: 0 },{ candidate: 'Tabasco', rank: 2 }]},
   { voter: 'Wilma Rudolph', status: RCV.STATUS_ACTIVE, ranks: [{ candidate: 'Yellow Bird', rank: 2 },{ candidate: 'Chipotle Cholula', rank: 1 },{ candidate: 'Tabasco', rank: 0 }]},
 ];
-const tallyExpected = {'Yellow Bird':2,'Chipotle Cholula':1};
+const countExpected = {"total":3,"counts":{"Yellow Bird":{"count":2,"percentage":67},"Chipotle Cholula":{"count":1,"percentage":33}}};
 
-// tally votes that result in a draw
-const tallyDrawVotes = [
+// count votes that result in a draw
+const countDrawVotes = [
   { voter: 'Sally Ride',    status: RCV.STATUS_ACTIVE, ranks: [{ candidate: 'Yellow Bird', rank: 1 },{ candidate: 'Chipotle Cholula', rank: 2 },{ candidate: 'Tabasco', rank: 0 }]},
   { voter: 'Father Time',   status: RCV.STATUS_ACTIVE, ranks: [{ candidate: 'Yellow Bird', rank: 2 },{ candidate: 'Chipotle Cholula', rank: 0 },{ candidate: 'Tabasco', rank: 1 }]},
   { voter: 'Wilma Rudolph', status: RCV.STATUS_ACTIVE, ranks: [{ candidate: 'Yellow Bird', rank: 0 },{ candidate: 'Chipotle Cholula', rank: 1 },{ candidate: 'Tabasco', rank: 2 }]},
 ];
-const tallyDrawExpected = {'Yellow Bird':1,'Tabasco':1,'Chipotle Cholula':1};
+const countDrawExpected = {"total":3,"counts":{"Yellow Bird":{"count":1,"percentage":33},"Tabasco":{"count":1,"percentage":33},"Chipotle Cholula":{"count":1,"percentage":33}}};
+
+// count first round of multi-round vote
+const countMultiVotes = [
+  { voter: 'Father Time',   ranks: [{ candidate: 'Yellow Bird', rank: 1 },{ candidate: 'Chipotle Cholula', rank: 2 },{ candidate: 'Tabasco', rank: 0 },{ candidate: 'Sriracha', rank: 0 }]},
+  { voter: 'Pablo Picasso', ranks: [{ candidate: 'Yellow Bird', rank: 2 },{ candidate: 'Chipotle Cholula', rank: 0 },{ candidate: 'Tabasco', rank: 1 },{ candidate: 'Sriracha', rank: 0 }]},
+  { voter: 'Wilma Rudolph', ranks: [{ candidate: 'Yellow Bird', rank: 1 },{ candidate: 'Chipotle Cholula', rank: 2 },{ candidate: 'Tabasco', rank: 0 },{ candidate: 'Sriracha', rank: 0 }]},
+  { voter: 'Jesse Owens',   ranks: [{ candidate: 'Yellow Bird', rank: 2 },{ candidate: 'Chipotle Cholula', rank: 1 },{ candidate: 'Tabasco', rank: 0 },{ candidate: 'Sriracha', rank: 0 }]},
+  { voter: 'George Jetson', ranks: [{ candidate: 'Yellow Bird', rank: 2 },{ candidate: 'Chipotle Cholula', rank: 1 },{ candidate: 'Tabasco', rank: 0 },{ candidate: 'Sriracha', rank: 0 }]},
+  { voter: 'Jeff Beck',     ranks: [{ candidate: 'Yellow Bird', rank: 2 },{ candidate: 'Chipotle Cholula', rank: 1 },{ candidate: 'Tabasco', rank: 0 },{ candidate: 'Sriracha', rank: 0 }]},
+  { voter: 'Liz Cotton',    ranks: [{ candidate: 'Yellow Bird', rank: 1 },{ candidate: 'Chipotle Cholula', rank: 2 },{ candidate: 'Tabasco', rank: 0 },{ candidate: 'Sriracha', rank: 0 }]},
+  { voter: 'Phil Collins',  ranks: [{ candidate: 'Yellow Bird', rank: 2 },{ candidate: 'Chipotle Cholula', rank: 0 },{ candidate: 'Tabasco', rank: 0 },{ candidate: 'Sriracha', rank: 1 }]},
+  { voter: 'Sally Ride',    ranks: [{ candidate: 'Yellow Bird', rank: 2 },{ candidate: 'Chipotle Cholula', rank: 1 },{ candidate: 'Tabasco', rank: 0 },{ candidate: 'Sriracha', rank: 0 }]},
+  { voter: 'Hank Williams', ranks: [{ candidate: 'Yellow Bird', rank: 0 },{ candidate: 'Chipotle Cholula', rank: 0 },{ candidate: 'Tabasco', rank: 2 },{ candidate: 'Sriracha', rank: 1 }]},
+  { voter: 'Pete Seeger',   ranks: [{ candidate: 'Yellow Bird', rank: 0 },{ candidate: 'Chipotle Cholula', rank: 0 },{ candidate: 'Tabasco', rank: 2 },{ candidate: 'Sriracha', rank: 1 }]},
+  { voter: 'Deb Downer',    ranks: [{ candidate: 'Yellow Bird', rank: 0 },{ candidate: 'Chipotle Cholula', rank: 0 },{ candidate: 'Tabasco', rank: 0 },{ candidate: 'Sriracha', rank: 0 }]},
+];
+const countMultiExpected = {"total":11,"counts":{"Yellow Bird":{"count":3,"percentage":27},"Tabasco":{"count":1,"percentage":9},"Chipotle Cholula":{"count":4,"percentage":36},"Sriracha":{"count":3,"percentage":27}}};
+
+// tally multi-round vote
+const tallyVotes = [
+  { voter: 'Father Time',   ranks: [{ candidate: 'Yellow Bird', rank: 1 },{ candidate: 'Chipotle Cholula', rank: 2 },{ candidate: 'Tabasco', rank: 0 },{ candidate: 'Sriracha', rank: 0 }]},
+  { voter: 'Pablo Picasso', ranks: [{ candidate: 'Yellow Bird', rank: 2 },{ candidate: 'Chipotle Cholula', rank: 0 },{ candidate: 'Tabasco', rank: 1 },{ candidate: 'Sriracha', rank: 0 }]},
+  { voter: 'Wilma Rudolph', ranks: [{ candidate: 'Yellow Bird', rank: 1 },{ candidate: 'Chipotle Cholula', rank: 2 },{ candidate: 'Tabasco', rank: 0 },{ candidate: 'Sriracha', rank: 0 }]},
+  { voter: 'Jesse Owens',   ranks: [{ candidate: 'Yellow Bird', rank: 2 },{ candidate: 'Chipotle Cholula', rank: 1 },{ candidate: 'Tabasco', rank: 0 },{ candidate: 'Sriracha', rank: 0 }]},
+  { voter: 'George Jetson', ranks: [{ candidate: 'Yellow Bird', rank: 2 },{ candidate: 'Chipotle Cholula', rank: 1 },{ candidate: 'Tabasco', rank: 0 },{ candidate: 'Sriracha', rank: 0 }]},
+  { voter: 'Jeff Beck',     ranks: [{ candidate: 'Yellow Bird', rank: 2 },{ candidate: 'Chipotle Cholula', rank: 1 },{ candidate: 'Tabasco', rank: 0 },{ candidate: 'Sriracha', rank: 0 }]},
+  { voter: 'Liz Cotton',    ranks: [{ candidate: 'Yellow Bird', rank: 1 },{ candidate: 'Chipotle Cholula', rank: 2 },{ candidate: 'Tabasco', rank: 0 },{ candidate: 'Sriracha', rank: 0 }]},
+  { voter: 'Phil Collins',  ranks: [{ candidate: 'Yellow Bird', rank: 2 },{ candidate: 'Chipotle Cholula', rank: 0 },{ candidate: 'Tabasco', rank: 0 },{ candidate: 'Sriracha', rank: 1 }]},
+  { voter: 'Sally Ride',    ranks: [{ candidate: 'Yellow Bird', rank: 2 },{ candidate: 'Chipotle Cholula', rank: 1 },{ candidate: 'Tabasco', rank: 0 },{ candidate: 'Sriracha', rank: 0 }]},
+  { voter: 'Hank Williams', ranks: [{ candidate: 'Yellow Bird', rank: 0 },{ candidate: 'Chipotle Cholula', rank: 0 },{ candidate: 'Tabasco', rank: 2 },{ candidate: 'Sriracha', rank: 1 }]},
+  { voter: 'Pete Seeger',   ranks: [{ candidate: 'Yellow Bird', rank: 0 },{ candidate: 'Chipotle Cholula', rank: 0 },{ candidate: 'Tabasco', rank: 2 },{ candidate: 'Sriracha', rank: 1 }]},
+  { voter: 'Deb Downer',    ranks: [{ candidate: 'Yellow Bird', rank: 0 },{ candidate: 'Chipotle Cholula', rank: 0 },{ candidate: 'Tabasco', rank: 0 },{ candidate: 'Sriracha', rank: 0 }]},
+];
+const tallyExpected = {"candidates":[{"candidate":"Yellow Bird","status":"active","counts":{"0":3,"1":3,"2":6},"count":4,"percentage":36},{"candidate":"Chipotle Cholula","status":"active","counts":{"0":5,"1":4,"2":3},"count":4,"percentage":36},{"candidate":"Tabasco","status":"eliminated","counts":{"0":9,"1":1,"2":2},"count":1,"percentage":9},{"candidate":"Sriracha","status":"eliminated","counts":{"0":9,"1":3},"count":3,"percentage":27}],"tally":{"rounds":[{"total":11,"counts":{"Yellow Bird":{"count":3,"percentage":27},"Tabasco":{"count":1,"percentage":9},"Chipotle Cholula":{"count":4,"percentage":36},"Sriracha":{"count":3,"percentage":27}}},{"total":11,"counts":{"Yellow Bird":{"count":4,"percentage":36},"Chipotle Cholula":{"count":4,"percentage":36},"Sriracha":{"count":3,"percentage":27}}},{"total":9,"counts":{"Yellow Bird":{"count":5,"percentage":56},"Chipotle Cholula":{"count":4,"percentage":44}}}],"winners":["Yellow Bird"]}};
 
 function init() {
   const rcv = new RCV();
@@ -172,7 +213,7 @@ function init() {
   addResult('rcv.prep', rcv.prep(votesActual), votesExpected);
 
   // test allocate()
-  rcv.candidates = [{candidate:'Yellow Bird',status:RCV.STATUS_ACTIVE},{candidate:'Chipotle Cholula',status:RCV.STATUS_ACTIVE},{candidate:'Tabasco',status:RCV.STATUS_ACTIVE}];
+  rcv.candidates = structuredClone(candidatesExpected);
 
   addResult('rcv.allocate', rcv.allocate(voteActual, rcv.candidates), voteExpected);
 
@@ -189,15 +230,18 @@ function init() {
   addResult('rcv.countOccurrences (mixed)', rcv.countOccurrences(arrayMixd), countsMixds);
 
   // test tallying votes
-  rcv.candidates = [{candidate:'Yellow Bird',status:RCV.STATUS_ACTIVE},{candidate:'Chipotle Cholula',status:RCV.STATUS_ACTIVE},{candidate:'Tabasco',status:RCV.STATUS_ACTIVE}];
+  rcv.candidates = structuredClone(candidatesExpected);
+  addResult('rcv.count', rcv.count(rcv.prep(countVotes)), countExpected);
+  addResult('rcv.count (draw)', rcv.count(rcv.prep(countDrawVotes)), countDrawExpected);
 
-  addResult('rcv.count', rcv.count(rcv.prep(tallyVotes)), tallyExpected);
-
-  addResult('rcv.count (multi)', rcv.count(rcv.prep(tallyDrawVotes)), tallyDrawExpected);
-
-// console.log(JSON.stringify(structuredClone(rcv)))
+  rcv.candidates = structuredClone(candidatesExtendedExpected);
+  addResult('rcv.count (multi)', rcv.count(rcv.prep(countMultiVotes)), countMultiExpected);
 
   // test determining a winner
+  addResult('rcv.tally', rcv.tally(
+    candidatesExtendedActual,
+    tallyVotes
+  ), tallyExpected);
 
   document.body.innerHTML = results.join('');
 }

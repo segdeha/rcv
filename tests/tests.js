@@ -1,6 +1,6 @@
 /* Unit tests for the RCV class */
 
-import { RCV } from './rcv.js'
+import { RCV } from '../assets/rcv.js'
 
 // function compareArrays(a1, a2) {
 //   if (a1.length !== a2.length) {

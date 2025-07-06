@@ -1,6 +1,6 @@
 /* Voting Machine */
 
-import { RCV } from './rcv.js'
+import { RCV } from './rcv.js';
 
 // responsibilities:
 // - keep a list of candidates

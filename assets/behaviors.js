@@ -6,6 +6,8 @@ import { VotingMachine } from './voting-machine.js';
 import { RandomNames } from './random-names.js';
 
 class App {
+  static ordinals = ['1st', '2nd', '3rd'];
+
   constructor() {
     // Levenshtein threshold under which 2 strings are considered duplicates
     this.THRSHLD = 0.25;
@@ -213,25 +215,17 @@ class App {
   // build some HTML based on the tallied voting results
   buildResults(tally) {
     const { voters, result } = tally;
-    const { candidates, tally: tally_ } = result;
-    const { rounds, winners } = tally_;
-
-// console.log('App.buildResults', 'candidates', candidates)
-// console.log('App.buildResults', 'rounds', rounds)
-// console.log('App.buildResults', 'voters', voters)
-// console.log('App.buildResults', 'winners', winners)
-
-    const maxRank = candidates.length;
-    const ordinals = ['1st', '2nd', '3rd'];
+    const { candidates, rounds, winners } = result;
 
     let html = '';
 
     // display a table of the raw voting results
     // build column headers
+    const maxRank = candidates.length;
     let ths_raw = '';
     for (let i = 0; i < maxRank; i += 1) {
-      if ('undefined' !== typeof ordinals[i]) {
-        ths_raw += `<th>${ordinals[i]}</th>`;
+      if ('undefined' !== typeof App.ordinals[i]) {
+        ths_raw += `<th>${App.ordinals[i]}</th>`;
       }
       else {
         ths_raw += `<th>${ i + 1 }th</th>`;
@@ -273,18 +267,20 @@ class App {
     // track the round for display purposes
     for (let i = 0; i < rounds.length; i += 1) {
       const round = rounds[i];
-      const { counts } = round;
-      const candidates = Object.keys(counts).map(key => {
-        return { candidate: key, counts: counts[key] };
+      const { candidateResults, roundNumber, totalActiveBallots } = round;
+      const candidates = Object.keys(candidateResults).map(key => {
+        return { name: key, results: candidateResults[key] };
       });
       candidates.sort((a, b) => {
-        return b.counts.count - a.counts.count;
+        return b.results.count - a.results.count;
       });
+
+      const maxRank = candidates.length;
 
       html += `
         <table>
           <tr>
-            <th colspan="3">Round: ${i + 1} (${round.total} valid ${round.total === 1 ? 'vote' : 'votes'})</th>
+            <th colspan="3">Round: ${roundNumber} (${totalActiveBallots} valid ${totalActiveBallots === 1 ? 'vote' : 'votes'})</th>
           </tr>
           <tr>
             <th>Candidate</th>
@@ -296,8 +292,8 @@ class App {
       // build rows
       let trs_rounds = '';
       candidates.forEach(candidate => {
-        const { candidate: name, counts } = candidate;
-        const { count, percentage } = counts;
+        const { name, results } = candidate;
+        const { count, percentage } = results;
 
         const winner = percentage >= 50 ? ' class="winner"' : '';
 

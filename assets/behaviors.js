@@ -183,7 +183,7 @@ class App {
     const ranked = document.querySelectorAll('#ranked .list-item, #unranked .list-item');
     const votes = [];
     ranked.forEach(item => {
-      const name = item.dataset['item-name'];
+      const name = item.dataset.itemName;
       const value = item.querySelector('input[type="hidden"]').value;
       votes.push({ candidate: name, rank: +value }); // cast value as a number
     });

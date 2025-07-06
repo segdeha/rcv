@@ -2,95 +2,6 @@
 
 import { RCV } from '../assets/rcv.js'
 
-// function compareArrays(a1, a2) {
-//   if (a1.length !== a2.length) {
-//     return false;
-//   }
-//   const samePrimitives = true;
-//   const sameObjects = null;
-//   for (let i = 0; i < a1.length; i += 1) {
-//     for (let j = 0; j < a2.length; j += 1) {
-//       if (a1[i] !== a2[j]) {
-//         samePrimitives = false;
-//         if (typeof a1[i] === 'object' && typeof a2[j] === 'object') {
-//           compareObjects(a1[i], a2[j]);
-//         }
-//       }
-//     }
-//   }
-// }
-
-// function compareObjects(o1, o2) {
-//   const samePrimitives = true;
-//   const k1 = Object.keys(o1);
-//   const k2 = Object.keys(o2);
-//   if (k1.length !== k2.length) {
-//     sameObjects = false;
-//   }
-//   else {
-//     for (let i = 0; i < k1.length; i += 1) {
-//       for (let j = 0; j < k2.length; j += 1) {
-//         if (o1[k1[i]] !== o2[k2[j]]) {
-//           samePrimitives = false;
-//         }
-//       }
-//     }
-//   }
-//   return samePrimitives;
-// }
-
-function deepCompare(a, b) {
-  // 1. Strict equality check (handles primitives, null, undefined, and same object reference)
-  if (a === b) return true;
-
-  // 2. Handle null, non-objects, and different types early
-  // If either is null or not an object, and they are not strictly equal (handled above), they are different.
-  if (a === null || typeof a !== 'object' ||
-      b === null || typeof b !== 'object') {
-    return false;
-  }
-
-  // 3. Compare Arrays
-  if (Array.isArray(a) && Array.isArray(b)) {
-    // Arrays must have the same length
-    if (a.length !== b.length) {
-      return false;
-    }
-    // Recursively compare each element in order
-    for (let i = 0; i < a.length; i++) {
-      if (!deepCompare(a[i], b[i])) {
-        return false; // If any element is not deeply equal, arrays are not equal
-      }
-    }
-    return true; // All elements are deeply equal
-  }
-
-  // 4. Compare Objects (that are not arrays)
-  if (a.constructor !== b.constructor) {
-    // If they have different constructors (e.g., one is a Date, one is a plain object), they are different.
-    return false;
-  }
-
-  const keysA = Object.keys(a);
-  const keysB = Object.keys(b);
-
-  // Objects must have the same number of keys
-  if (keysA.length !== keysB.length) {
-    return false;
-  }
-
-  // Recursively compare values for each key
-  for (let i = 0; i < keysA.length; i++) {
-    const key = keysA[i];
-    // Check if key exists in b and if their values are deeply equal
-    if (!Object.prototype.hasOwnProperty.call(b, key) || !deepCompare(a[key], b[key])) {
-      return false; // If a key is missing in b or its value is not deeply equal, objects are not equal
-    }
-  }
-
-  return true; // All keys and their values are deeply equal
-}
-
 const results = [];
 
 function addResult(func, actual, expected) {
@@ -99,7 +10,6 @@ function addResult(func, actual, expected) {
     expected: JSON.stringify(expected),
   };
   // compare
-  // const same = deepCompare(actual, expected);
   const same = stringified.actual === stringified.expected;
   // display
   results.push(`
@@ -118,7 +28,7 @@ function addResult(func, actual, expected) {
 `);
 }
 
-// test data
+// fixtures
 
 // candidates
 const candidatesActual = ['Yellow Bird', 'Chipotle Cholula', 'Tabasco'];

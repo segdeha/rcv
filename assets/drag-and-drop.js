@@ -45,6 +45,11 @@ class DragAndDrop {
     }
   }
 
+  removeEventListeners = (li) => {
+    li.removeEventListener('dragstart', this.handleDragStart);
+    li.removeEventListener('dragend', this.handleDragEnd);
+  }
+
   addItemEventListeners = () => {
     const lis = document.querySelectorAll('.list-item');
 
@@ -57,8 +62,7 @@ class DragAndDrop {
     lis.forEach(li => {
       // Remove existing listeners first to prevent duplicates if called multiple times
       // This is important to avoid memory leaks and multiple event firings.
-      li.removeEventListener('dragstart', this.handleDragStart);
-      li.removeEventListener('dragend', this.handleDragEnd);
+      this.removeEventListeners(li);
 
       // Now, add the listeners
       li.addEventListener('dragstart', this.handleDragStart);

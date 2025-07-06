@@ -198,13 +198,30 @@
         cursor: grab;
         display: flex;
         justify-content: space-between;
+        padding-right: 3rem;
+        position: relative;
         transition: transform 0.2s ease, box-shadow 0.2s ease;
       }
-        .list-item span {
+        .list-item span:first-child {
           overflow: hidden;
           text-overflow: ellipsis;
           white-space: nowrap;
         }
+        .list-item .delete-item {
+          background: white url(./assets/img/x.png) center / 50% no-repeat;
+          border: solid 1px #ccc;
+          border-radius: 1rem;
+          display: block;
+          height: 1.5rem;
+          opacity: 0.5;
+          position: absolute;
+          right: 0.75rem;
+          top: 0.75rem;
+          width: 1.5rem;
+        }
+          .list-item .delete-item:hover {
+            opacity: 1;
+          }
         .list-item.dragging {
           border-color: #ccc;
           border-style: dashed;

@@ -46,6 +46,14 @@ class VotingMachine {
     this.candidates.push(candidate);
   }
 
+  // remove an existing item from consideration
+  remove(candidate) {
+    const idx = this.candidates.indexOf(candidate);
+    if (idx > -1) {
+      this.candidates.splice(idx, 1);
+    }
+  }
+
   // return a simple array of strings of the candidates
   list() {
     return this.candidates;

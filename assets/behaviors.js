@@ -118,6 +118,16 @@ class App {
     }
   }
 
+  // remove an item from the list of candidates
+  handleRemove(evt) {
+    // only match on the little x icon
+    if (evt.target.matches('.delete-item')) {
+      // find the parent list item
+      const li = evt.target.closest('.list-item');
+      this.removeItem(li);
+    }
+  }
+
   handleVote(evt) {
     evt.preventDefault(); // don't submit the form
     const { resultsList, voterInput } = this.dom;
@@ -159,11 +169,14 @@ class App {
   }
 
   addEventListeners() {
-    const { addButton, addConfirm, addForm, ballotButton, itemInput } = this.dom;
+    const { addButton, addConfirm, addForm, ballotButton, itemInput, itemsList, rankedList } = this.dom;
     addButton.addEventListener('click', this.handleAdd.bind(this));
     addForm.addEventListener('submit', this.handleAdd.bind(this));
     ballotButton.addEventListener('click', this.handleVote.bind(this));
     itemInput.addEventListener('focus', this.handleInputFocus.bind(this));
+    // use event delegation for removing items from ballots
+    itemsList.addEventListener('click', this.handleRemove.bind(this));
+    rankedList.addEventListener('click', this.handleRemove.bind(this));
   }
 
   addItem(item) {
@@ -177,6 +190,16 @@ class App {
     const html = this.buildBallot(items);
     this.render('', rankedList);
     this.render(html, itemsList);
+  }
+
+  removeItem(li) {
+    // remove event listeners
+    this.dnd.removeEventListeners(li);
+    // remove the <li> from the DOM
+    li.remove();
+    // remove the item from the list of candidates
+    const candidate = li.dataset.itemName;
+    this.vm.remove(candidate);
   }
 
   // read vote values for each candidate from the DOM
@@ -207,6 +230,7 @@ class App {
       html += `
         <li class="list-item" draggable="true" data-item-name="${item}">
           <span>${item}</span>
+          <span class="delete-item"></span>
           <input type="hidden" value="0">
         </li>
       `;
@@ -321,7 +345,9 @@ class App {
   }
 
   render(html, el) {
-    el.innerHTML = html;
+    if ('string' === typeof html) {
+      el.innerHTML = html;
+    }
   }
 }
 

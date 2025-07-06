@@ -123,7 +123,7 @@ function addResult(func, actual, expected) {
 // candidates
 const candidatesActual = ['Yellow Bird', 'Chipotle Cholula', 'Tabasco'];
 const candidatesExtendedActual = ['Yellow Bird', 'Chipotle Cholula', 'Tabasco', 'Sriracha'];
-const candidatesExpected = [{candidate:'Yellow Bird',status:RCV.STATUS_ACTIVE},{candidate:'Chipotle Cholula',status:RCV.STATUS_ACTIVE},{candidate:'Tabasco',status:RCV.STATUS_ACTIVE}];
+const candidatesExpected = [{"candidate":"Yellow Bird","status":"active","currentRoundVotes":0,"currentRoundPercentage":0},{"candidate":"Chipotle Cholula","status":"active","currentRoundVotes":0,"currentRoundPercentage":0},{"candidate":"Tabasco","status":"active","currentRoundVotes":0,"currentRoundPercentage":0}];
 const candidatesExtendedExpected = [{candidate:'Yellow Bird',status:RCV.STATUS_ACTIVE},{candidate:'Chipotle Cholula',status:RCV.STATUS_ACTIVE},{candidate:'Tabasco',status:RCV.STATUS_ACTIVE},{candidate:'Sriracha',status:RCV.STATUS_ACTIVE}];
 
 // votes
@@ -135,23 +135,15 @@ const candidatesExtendedExpected = [{candidate:'Yellow Bird',status:RCV.STATUS_A
 //   ],
 // }
 const votesActual   = [{ voter: 'Sally Ride', ranks: [{ candidate: 'Tabasco', rank: 0 },{ candidate: 'Chipotle Cholula', rank: 2 },{ candidate: 'Yellow Bird', rank: 1 }]}];
-const votesExpected = [{ voter: 'Sally Ride', status: RCV.STATUS_ACTIVE, ranks: [{ candidate: 'Yellow Bird', rank: 1 },{ candidate: 'Chipotle Cholula', rank: 2 },{ candidate: 'Tabasco', rank: 0 }]}];
+const votesExpected = [{"voter":"Sally Ride","status":"active","currentRankIndex":0,"ranks":[{"candidate":"Yellow Bird","rank":1},{"candidate":"Chipotle Cholula","rank":2},{"candidate":"Tabasco","rank":0}]}];
 
 // single vote
-const voteActual = { voter: 'Sally Ride', status: RCV.STATUS_ACTIVE, ranks: [{ candidate: 'Yellow Bird', rank: 1 },{ candidate: 'Chipotle Cholula', rank: 2 },{ candidate: 'Tabasco', rank: 0 }]};
+const voteActual = {"voter":"Sally Ride","status":"active","currentRankIndex":0,"ranks":[{"candidate":"Yellow Bird","rank":1},{"candidate":"Chipotle Cholula","rank":2},{"candidate":"Tabasco","rank":0}]};
 const voteExpected = 'Yellow Bird';
 
 // exhausted vote
 const exhaustedVoteActual = { voter: 'Sally Ride', status: RCV.STATUS_ACTIVE, ranks: [{ candidate: 'Yellow Bird', rank: 1 },{ candidate: 'Chipotle Cholula', rank: 2 },{ candidate: 'Tabasco', rank: 0 }]};
 const exhaustedVoteExpected = null;
-
-// countOccurrences
-const arrayNums = [1, 2, 2, 3, 3, 3];
-const arrayStrs = ['one', 'two', 'two', 'three', 'three', 'three'];
-const arrayMixd = [1, 2, 2, 'three', 'three', 'three'];
-const countsNums  = {"total":6,"counts":{"1":{"count":1,"percentage":17},"2":{"count":2,"percentage":33},"3":{"count":3,"percentage":50}}};
-const countsStrs  = {"total":6,"counts":{"one":{"count":1,"percentage":17},"two":{"count":2,"percentage":33},"three":{"count":3,"percentage":50}}};
-const countsMixds = {"total":6,"counts":{"1":{"count":1,"percentage":17},"2":{"count":2,"percentage":33},"three":{"count":3,"percentage":50}}};
 
 // count votes
 const countVotes = [
@@ -159,7 +151,7 @@ const countVotes = [
   { voter: 'Father Time',   status: RCV.STATUS_ACTIVE, ranks: [{ candidate: 'Yellow Bird', rank: 1 },{ candidate: 'Chipotle Cholula', rank: 0 },{ candidate: 'Tabasco', rank: 2 }]},
   { voter: 'Wilma Rudolph', status: RCV.STATUS_ACTIVE, ranks: [{ candidate: 'Yellow Bird', rank: 2 },{ candidate: 'Chipotle Cholula', rank: 1 },{ candidate: 'Tabasco', rank: 0 }]},
 ];
-const countExpected = {"total":3,"counts":{"Yellow Bird":{"count":2,"percentage":67},"Chipotle Cholula":{"count":1,"percentage":33}}};
+const countExpected = {"totalActiveBallots":3,"candidateResults":{"Yellow Bird":{"count":2,"percentage":67},"Chipotle Cholula":{"count":1,"percentage":33},"Tabasco":{"count":0,"percentage":0}}};
 
 // count votes that result in a draw
 const countDrawVotes = [
@@ -167,7 +159,7 @@ const countDrawVotes = [
   { voter: 'Father Time',   status: RCV.STATUS_ACTIVE, ranks: [{ candidate: 'Yellow Bird', rank: 2 },{ candidate: 'Chipotle Cholula', rank: 0 },{ candidate: 'Tabasco', rank: 1 }]},
   { voter: 'Wilma Rudolph', status: RCV.STATUS_ACTIVE, ranks: [{ candidate: 'Yellow Bird', rank: 0 },{ candidate: 'Chipotle Cholula', rank: 1 },{ candidate: 'Tabasco', rank: 2 }]},
 ];
-const countDrawExpected = {"total":3,"counts":{"Yellow Bird":{"count":1,"percentage":33},"Tabasco":{"count":1,"percentage":33},"Chipotle Cholula":{"count":1,"percentage":33}}};
+const countDrawExpected = {"totalActiveBallots":3,"candidateResults":{"Yellow Bird":{"count":1,"percentage":33},"Chipotle Cholula":{"count":1,"percentage":33},"Tabasco":{"count":1,"percentage":33}}};
 
 // count first round of multi-round vote
 const countMultiVotes = [
@@ -184,7 +176,7 @@ const countMultiVotes = [
   { voter: 'Pete Seeger',   ranks: [{ candidate: 'Yellow Bird', rank: 0 },{ candidate: 'Chipotle Cholula', rank: 0 },{ candidate: 'Tabasco', rank: 2 },{ candidate: 'Sriracha', rank: 1 }]},
   { voter: 'Deb Downer',    ranks: [{ candidate: 'Yellow Bird', rank: 0 },{ candidate: 'Chipotle Cholula', rank: 0 },{ candidate: 'Tabasco', rank: 0 },{ candidate: 'Sriracha', rank: 0 }]},
 ];
-const countMultiExpected = {"total":11,"counts":{"Yellow Bird":{"count":3,"percentage":27},"Tabasco":{"count":1,"percentage":9},"Chipotle Cholula":{"count":4,"percentage":36},"Sriracha":{"count":3,"percentage":27}}};
+const countMultiExpected = {"totalActiveBallots":12,"candidateResults":{"Yellow Bird":{"count":3,"percentage":25},"Chipotle Cholula":{"count":4,"percentage":33},"Tabasco":{"count":1,"percentage":8},"Sriracha":{"count":3,"percentage":25}}};
 
 // tally multi-round vote
 const tallyVotes = [
@@ -201,7 +193,7 @@ const tallyVotes = [
   { voter: 'Pete Seeger',   ranks: [{ candidate: 'Yellow Bird', rank: 0 },{ candidate: 'Chipotle Cholula', rank: 0 },{ candidate: 'Tabasco', rank: 2 },{ candidate: 'Sriracha', rank: 1 }]},
   { voter: 'Deb Downer',    ranks: [{ candidate: 'Yellow Bird', rank: 0 },{ candidate: 'Chipotle Cholula', rank: 0 },{ candidate: 'Tabasco', rank: 0 },{ candidate: 'Sriracha', rank: 0 }]},
 ];
-const tallyExpected = {"candidates":[{"candidate":"Yellow Bird","status":"active","counts":{"0":3,"1":3,"2":6},"count":4,"percentage":36},{"candidate":"Chipotle Cholula","status":"active","counts":{"0":5,"1":4,"2":3},"count":4,"percentage":36},{"candidate":"Tabasco","status":"eliminated","counts":{"0":9,"1":1,"2":2},"count":1,"percentage":9},{"candidate":"Sriracha","status":"eliminated","counts":{"0":9,"1":3},"count":3,"percentage":27}],"tally":{"rounds":[{"total":11,"counts":{"Yellow Bird":{"count":3,"percentage":27},"Tabasco":{"count":1,"percentage":9},"Chipotle Cholula":{"count":4,"percentage":36},"Sriracha":{"count":3,"percentage":27}}},{"total":11,"counts":{"Yellow Bird":{"count":4,"percentage":36},"Chipotle Cholula":{"count":4,"percentage":36},"Sriracha":{"count":3,"percentage":27}}},{"total":9,"counts":{"Yellow Bird":{"count":5,"percentage":56},"Chipotle Cholula":{"count":4,"percentage":44}}}],"winners":["Yellow Bird"]}};
+const tallyExpected = {"rounds":[{"roundNumber":1,"totalActiveBallots":12,"candidateResults":{"Yellow Bird":{"count":3,"percentage":25},"Chipotle Cholula":{"count":4,"percentage":33},"Tabasco":{"count":1,"percentage":8},"Sriracha":{"count":3,"percentage":25}}},{"roundNumber":2,"totalActiveBallots":11,"candidateResults":{"Yellow Bird":{"count":4,"percentage":36},"Chipotle Cholula":{"count":4,"percentage":36},"Tabasco":{"count":0,"percentage":0},"Sriracha":{"count":3,"percentage":27}}},{"roundNumber":3,"totalActiveBallots":11,"candidateResults":{"Yellow Bird":{"count":5,"percentage":45},"Chipotle Cholula":{"count":4,"percentage":36},"Tabasco":{"count":0,"percentage":0},"Sriracha":{"count":0,"percentage":0}}},{"roundNumber":4,"totalActiveBallots":9,"candidateResults":{"Yellow Bird":{"count":9,"percentage":100},"Chipotle Cholula":{"count":0,"percentage":0},"Tabasco":{"count":0,"percentage":0},"Sriracha":{"count":0,"percentage":0}}}],"winners":["Yellow Bird"],"candidates":[{"candidate":"Yellow Bird","status":"active","currentRoundVotes":9,"currentRoundPercentage":100,"counts":{"0":3,"1":3,"2":6}},{"candidate":"Chipotle Cholula","status":"eliminated","currentRoundVotes":0,"currentRoundPercentage":0,"counts":{"0":5,"1":4,"2":3}},{"candidate":"Tabasco","status":"eliminated","currentRoundVotes":0,"currentRoundPercentage":0,"counts":{"0":9,"1":1,"2":2}},{"candidate":"Sriracha","status":"eliminated","currentRoundVotes":0,"currentRoundPercentage":0,"counts":{"0":9,"1":3}}]};
 
 function init() {
   const rcv = new RCV();
@@ -223,11 +215,6 @@ function init() {
   // ranked candidates eliminated, this ballot should return null and be marked exhausted
   addResult('rcv.allocate (exhausted)', rcv.allocate(exhaustedVoteActual, [{candidate:'Tabasco',status:RCV.STATUS_ACTIVE}]), exhaustedVoteExpected);
   addResult('rcv.allocate (exhausted status)', exhaustedVoteActual.status, RCV.STATUS_EXHAUSTED);
-
-  // test countOccurrences()
-  addResult('rcv.countOccurrences (numbers)', rcv.countOccurrences(arrayNums), countsNums);
-  addResult('rcv.countOccurrences (strings)', rcv.countOccurrences(arrayStrs), countsStrs);
-  addResult('rcv.countOccurrences (mixed)', rcv.countOccurrences(arrayMixd), countsMixds);
 
   // test tallying votes
   rcv.candidates = structuredClone(candidatesExpected);

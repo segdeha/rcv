@@ -8,10 +8,29 @@ My motivation for building RCV was to better understand the dynamics of instant-
 
 At a command line:
 
-1. `git clone git@github.com:segdeha/rcv.git`
-2. `cd rcv`
-3. `python -m http.server`
-4. `open http://localhost:8000`
+### 1. Download source
+
+```bash
+git clone git@github.com:segdeha/rcv.git
+```
+
+### 2. Navigate to the project directory
+
+```bash
+cd rcv
+```
+
+### 3. Start a web server (Python 3 shown)
+
+```bash
+python -m http.server
+```
+
+### 4. Visit the page in a browser
+
+```bash
+open http://localhost:8000
+```
 
 ## usage
 

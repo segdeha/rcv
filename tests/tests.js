@@ -230,7 +230,7 @@ function init() {
     tallyVotes
   ), tallyExpected);
 
-  document.body.innerHTML = results.join('');
+  document.getElementById('results').innerHTML = results.join('');
 }
 
 document.addEventListener('DOMContentLoaded', init);

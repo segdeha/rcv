@@ -21,6 +21,7 @@ class App {
       itemInput:    document.querySelector('#add input[name=item]'),
       itemsList:    document.querySelector('#unranked'),
       noItems:      document.querySelector('#no-items'),
+      rankedList:   document.querySelector('#ranked'),
       resultsList:  document.querySelector('#results'),
       voterInput:   document.querySelector('#ballot input[name=voter]'),
     };
@@ -166,7 +167,7 @@ class App {
   }
 
   addItem(item) {
-    const { addConfirm, itemInput, itemsList, noItems } = this.dom;
+    const { addConfirm, itemInput, itemsList, noItems, rankedList } = this.dom;
     this.vm.add(item);
     itemInput.value = '';
     itemInput.blur();
@@ -174,6 +175,7 @@ class App {
     addConfirm.classList.add('show');
     const items = this.vm.list();
     const html = this.buildBallot(items);
+    this.render('', rankedList);
     this.render(html, itemsList);
   }
 
@@ -319,9 +321,7 @@ class App {
   }
 
   render(html, el) {
-    if (html) {
-      el.innerHTML = html;
-    }
+    el.innerHTML = html;
   }
 }
 

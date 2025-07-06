@@ -10,7 +10,7 @@ Instant runoff works as follows:
 4. Allocate the ballots for the just-eliminated candidate to each ballot’s next-highest-ranked active candidate
 5. GOTO 1
 
-My motivation for building RCV was to better understand the dynamics of instant-runoff elections.
+My motivation for building RCV was to better understand the dynamics of instant-runoff elections. Installation steps are below, but I have [the same code running on my website](https://andrew.hedges.name/experiments/rcv/) if you just want to try it out.
 
 ## Installation
 

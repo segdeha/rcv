@@ -1,10 +1,18 @@
-# rcv
+# RCV
 
-A simple [ranked-choice voting](https://en.wikipedia.org/wiki/Ranked_voting) implementation using an [instant-runoff](https://en.wikipedia.org/wiki/Instant-runoff_voting) algorithm.
+RCV is a simple [ranked-choice voting](https://en.wikipedia.org/wiki/Ranked_voting) implementation using an [instant-runoff](https://en.wikipedia.org/wiki/Instant-runoff_voting) algorithm.
+
+Instant runoff works as follows:
+
+1. Count the number of 1st-ranked votes for each candidate
+2. If any candidate reaches 50% of the votes, they win
+3. If no candidate reaches 50%, eliminate the candidate with the lowest number of 1st-ranked votes
+4. Allocate the ballots for the just-eliminated candidate to each ballot’s next-highest-ranked active candidate
+5. GOTO 1
 
 My motivation for building RCV was to better understand the dynamics of instant-runoff elections.
 
-## installation
+## Installation
 
 At a command line:
 
@@ -32,7 +40,7 @@ python -m http.server
 open http://localhost:8000
 ```
 
-## usage
+## Usage
 
 On [the application page](http://localhost:8000):
 
